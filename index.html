@@ -1,27 +1,46 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" class="dark">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>JusFlow - Gestão Jurídica em Tempo Real</title>
-  <!-- Tailwind CSS -->
+  <title>JusFlow - Gestão Jurídica Inteligente</title>
+
+  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
+
   <script>
     tailwind.config = {
       darkMode: 'class',
       theme: {
         extend: {
           colors: {
-            brand: { 50: '#f0f9ff', 400: '#38bdf8', 500: '#0ea5e9', 600: '#0284c7' },
-            accent: { 400: '#fbbf24', 500: '#f59e0b' },
-            ai: { 400: '#c084fc', 500: '#a855f7', 600: '#9333ea' }
+            slate: {
+              950: '#070a12',
+              900: '#0b0f19',
+              850: '#111726',
+              800: '#1a2236'
+            },
+            cyan: {
+              400: '#38bdf8',
+              500: '#00d2ff',
+              600: '#0284c7'
+            },
+            neon: {
+              400: '#c084fc',
+              500: '#a855f7',
+              600: '#9333ea'
+            }
+          },
+          fontFamily: {
+            sans: ['-apple-system', 'BlinkMacSystemFont', 'SF Pro Display', 'Inter', 'Segoe UI', 'Roboto', 'sans-serif']
           }
         }
       }
     }
   </script>
+
   <style>
     :root {
       --sat: env(safe-area-inset-top, 20px);
@@ -29,184 +48,274 @@
     }
     body {
       padding-top: var(--sat);
-      padding-bottom: calc(4.5rem + var(--sab));
+      padding-bottom: calc(5rem + var(--sab));
+      background-color: #070a12;
       -webkit-tap-highlight-color: transparent;
       user-select: none;
-      background-color: #090d16;
     }
-    .safe-top { padding-top: max(0.75rem, var(--sat)); }
-    .safe-bottom { padding-bottom: max(1rem, var(--sab)); }
+    @media (min-width: 768px) {
+      body { padding-bottom: 2rem; }
+    }
 
+    .safe-top-padding { padding-top: max(0.85rem, var(--sat)); }
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-    .slide-up { animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
-    @keyframes slideUp {
-      from { transform: translateY(100%); opacity: 0; }
-      to { transform: translateY(0); opacity: 1; }
-    }
-
+    /* Efeitos de Vidro (Glassmorphism) */
     .glass-card {
-      background: rgba(15, 23, 42, 0.75);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
+      background: rgba(17, 23, 38, 0.7);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
       border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    }
+    .glass-card-interactive {
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .glass-card-interactive:hover {
+      border-color: rgba(0, 210, 255, 0.3);
+      transform: translateY(-2px);
+      box-shadow: 0 12px 40px -10px rgba(0, 210, 255, 0.2);
     }
     .glass-nav {
       background: rgba(11, 15, 25, 0.88);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
       border-top: 1px solid rgba(255, 255, 255, 0.08);
     }
 
-    @keyframes pulseMic {
-      0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
-      70% { transform: scale(1.08); box-shadow: 0 0 0 12px rgba(239, 68, 68, 0); }
-      100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+    /* Ondas do Microfone */
+    @keyframes pulseRing {
+      0% { transform: scale(0.95); opacity: 0.8; }
+      50% { transform: scale(1.15); opacity: 0.4; }
+      100% { transform: scale(0.95); opacity: 0.8; }
     }
-    .mic-recording {
-      animation: pulseMic 1.4s infinite;
-      background-color: #ef4444 !important;
-      color: #ffffff !important;
+    .mic-active-ring {
+      animation: pulseRing 1.2s infinite ease-in-out;
+    }
+
+    /* Modal Animation */
+    .slide-up {
+      animation: slideUpModal 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes slideUpModal {
+      from { transform: translateY(100%); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
     }
   </style>
 </head>
-<body class="text-slate-100 font-sans min-h-screen flex flex-col justify-between antialiased selection:bg-brand-500 selection:text-slate-950">
+<body class="text-slate-100 antialiased min-h-screen flex flex-col justify-between selection:bg-cyan-500 selection:text-slate-950">
 
-  <!-- HEADER COM DYNAMIC ISLAND & STATUS DE SYNC -->
-  <header class="glass-card sticky top-0 z-30 safe-top px-4 py-3.5 flex items-center justify-between shadow-xl">
-    <div class="flex items-center space-x-3">
-      <div class="p-2.5 bg-gradient-to-tr from-brand-600 via-brand-500 to-sky-400 rounded-2xl text-slate-950 font-black shadow-lg shadow-brand-500/25">
-        <i data-lucide="scale" class="w-5 h-5 text-slate-950"></i>
-      </div>
-      <div>
-        <div class="flex items-center space-x-1.5">
-          <h1 class="text-base font-extrabold text-slate-100 tracking-tight">JusFlow</h1>
-          <span class="text-[9px] font-bold px-1.5 py-0.5 bg-brand-500/10 text-brand-400 border border-brand-500/20 rounded-md">LIVE</span>
+  <!-- HEADER NATIVO / DYNAMIC ISLAND COMPATÍVEL -->
+  <header class="glass-card sticky top-0 z-40 safe-top-padding px-4 py-3.5 border-b border-white/10 shadow-2xl">
+    <div class="max-w-6xl mx-auto flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="p-2.5 bg-gradient-to-br from-cyan-400 via-cyan-500 to-neon-500 rounded-2xl text-slate-950 shadow-lg shadow-cyan-500/25">
+          <i data-lucide="scale" class="w-5 h-5 text-slate-950 stroke-[2.5]"></i>
         </div>
-        <p id="sync-status" class="text-[10px] text-slate-400 font-medium flex items-center space-x-1">
-          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block animate-pulse"></span>
-          <span>Sincronizado com Planilha</span>
-        </p>
+        <div>
+          <div class="flex items-center space-x-2">
+            <h1 class="text-base font-black tracking-tight text-white">JusFlow</h1>
+            <span class="text-[9px] font-extrabold px-1.5 py-0.5 bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 rounded-md tracking-wider">PRO 2026</span>
+          </div>
+          <p id="sync-status" class="text-[10px] text-slate-400 font-medium flex items-center space-x-1.5 mt-0.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block animate-pulse"></span>
+            <span id="sync-status-text">Sincronizado com Google Planilha</span>
+          </p>
+        </div>
       </div>
-    </div>
-    
-    <div class="flex items-center space-x-2">
-      <button onclick="fetchCasesFromSheet()" title="Recarregar da Planilha" class="p-2 bg-slate-800/80 hover:bg-slate-700 text-slate-300 rounded-xl active:scale-95 transition-all">
-        <i data-lucide="refresh-cw" class="w-4 h-4"></i>
-      </button>
-      <button onclick="openModal()" class="bg-gradient-to-r from-brand-500 to-brand-600 hover:from-brand-400 hover:to-brand-500 text-slate-950 font-bold px-3.5 py-2 rounded-xl text-xs flex items-center space-x-1.5 shadow-lg shadow-brand-500/20 active:scale-95 transition-all">
-        <i data-lucide="plus-circle" class="w-4 h-4"></i>
-        <span>Novo Caso</span>
-      </button>
+
+      <div class="flex items-center space-x-2">
+        <button onclick="fetchCasesFromSheet()" title="Atualizar dados da planilha" class="p-2.5 bg-slate-800/80 hover:bg-slate-700 text-slate-300 rounded-xl active:scale-95 transition-all border border-white/5">
+          <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+        </button>
+        <button onclick="openModal()" class="bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-400 hover:to-cyan-500 text-slate-950 font-black px-3.5 py-2.5 rounded-xl text-xs flex items-center space-x-1.5 shadow-lg shadow-cyan-500/20 active:scale-95 transition-all">
+          <i data-lucide="plus-circle" class="w-4 h-4 stroke-[2.5]"></i>
+          <span class="hidden sm:inline">Novo Processo</span>
+          <span class="sm:hidden">Novo</span>
+        </button>
+      </div>
     </div>
   </header>
 
-  <!-- CONTEÚDO PRINCIPAL (TABS) -->
-  <main class="flex-1 px-4 py-4 overflow-y-auto no-scrollbar space-y-5">
+  <!-- CONTEÚDO PRINCIPAL -->
+  <main class="flex-1 max-w-6xl w-full mx-auto px-4 py-5 space-y-6">
 
-    <!-- TAB 1: DASHBOARD DE INÍCIO -->
-    <div id="tab-inicio" class="tab-content space-y-4">
-      <div class="grid grid-cols-2 gap-3">
-        <div class="glass-card p-3.5 rounded-2xl relative overflow-hidden">
-          <div class="flex justify-between items-start mb-1">
-            <span class="text-[11px] font-semibold text-slate-400">Faturamento Mês</span>
-            <div class="p-1.5 bg-emerald-500/10 rounded-lg text-emerald-400"><i data-lucide="trending-up" class="w-3.5 h-3.5"></i></div>
+    <!-- NAVEGAÇÃO DESKTOP / MENSAGEM -->
+    <div class="hidden md:flex items-center justify-between glass-card p-2 rounded-2xl border border-white/10">
+      <div class="flex space-x-1">
+        <button onclick="switchTab('inicio')" id="dtab-inicio" class="dnav-btn px-4 py-2 rounded-xl text-xs font-bold transition-all text-cyan-400 bg-cyan-500/10">Início</button>
+        <button onclick="switchTab('voz')" id="dtab-voz" class="dnav-btn px-4 py-2 rounded-xl text-xs font-bold transition-all text-slate-400 hover:text-white">🎙️ Busca & Ditado</button>
+        <button onclick="switchTab('contratos')" id="dtab-contratos" class="dnav-btn px-4 py-2 rounded-xl text-xs font-bold transition-all text-slate-400 hover:text-white">Processos</button>
+        <button onclick="switchTab('possiveis')" id="dtab-possiveis" class="dnav-btn px-4 py-2 rounded-xl text-xs font-bold transition-all text-slate-400 hover:text-white">Possíveis (Leads)</button>
+        <button onclick="switchTab('pendentes')" id="dtab-pendentes" class="dnav-btn px-4 py-2 rounded-xl text-xs font-bold transition-all text-slate-400 hover:text-white">Pendentes</button>
+        <button onclick="switchTab('encerrados')" id="dtab-encerrados" class="dnav-btn px-4 py-2 rounded-xl text-xs font-bold transition-all text-slate-400 hover:text-white">Encerrados</button>
+      </div>
+      <span class="text-xs text-slate-400 pr-3 font-medium"><i data-lucide="zap" class="w-3.5 h-3.5 text-cyan-400 inline mr-1"></i>IA & Sincronização Ativas</span>
+    </div>
+
+    <!-- TAB 1: INÍCIO / DASHBOARD -->
+    <div id="tab-inicio" class="tab-content space-y-5">
+
+      <!-- DASHBOARD CARDS -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3.5">
+        <div class="glass-card p-4 rounded-2xl border-l-4 border-emerald-400 relative overflow-hidden">
+          <div class="flex justify-between items-center text-slate-400 mb-1">
+            <span class="text-[11px] font-bold uppercase tracking-wider">Fat. Mês Atual</span>
+            <i data-lucide="trending-up" class="w-4 h-4 text-emerald-400"></i>
           </div>
-          <span id="dash-month-revenue" class="text-lg font-black text-emerald-400 block">R$ 0,00</span>
-          <span class="text-[9px] text-slate-500">Mês Atual</span>
+          <span id="dash-month-revenue" class="text-lg md:text-xl font-black text-emerald-400 block tracking-tight">R$ 0,00</span>
+          <span class="text-[10px] text-slate-400 font-medium mt-0.5 block">Honorários vigentes</span>
         </div>
 
-        <div class="glass-card p-3.5 rounded-2xl relative overflow-hidden">
-          <div class="flex justify-between items-start mb-1">
-            <span class="text-[11px] font-semibold text-slate-400">Faturamento Ano</span>
-            <div class="p-1.5 bg-brand-500/10 rounded-lg text-brand-400"><i data-lucide="calendar" class="w-3.5 h-3.5"></i></div>
+        <div class="glass-card p-4 rounded-2xl border-l-4 border-cyan-400 relative overflow-hidden">
+          <div class="flex justify-between items-center text-slate-400 mb-1">
+            <span class="text-[11px] font-bold uppercase tracking-wider">Fat. Ano 2026</span>
+            <i data-lucide="calendar" class="w-4 h-4 text-cyan-400"></i>
           </div>
-          <span id="dash-year-revenue" class="text-lg font-black text-brand-400 block">R$ 0,00</span>
-          <span class="text-[9px] text-slate-500">Ano Vigente</span>
+          <span id="dash-year-revenue" class="text-lg md:text-xl font-black text-cyan-400 block tracking-tight">R$ 0,00</span>
+          <span class="text-[10px] text-slate-400 font-medium mt-0.5 block">Acumulado anual</span>
+        </div>
+
+        <div class="glass-card p-4 rounded-2xl border-l-4 border-amber-400 relative overflow-hidden">
+          <div class="flex justify-between items-center text-slate-400 mb-1">
+            <span class="text-[11px] font-bold uppercase tracking-wider">Entradas Caixa</span>
+            <i data-lucide="wallet" class="w-4 h-4 text-amber-400"></i>
+          </div>
+          <span id="dash-total-advance" class="text-lg md:text-xl font-black text-amber-400 block tracking-tight">R$ 0,00</span>
+          <span class="text-[10px] text-slate-400 font-medium mt-0.5 block">Em caixa imediato</span>
+        </div>
+
+        <div class="glass-card p-4 rounded-2xl border-l-4 border-neon-400 relative overflow-hidden">
+          <div class="flex justify-between items-center text-slate-400 mb-1">
+            <span class="text-[11px] font-bold uppercase tracking-wider">Lucro Líquido</span>
+            <i data-lucide="shield-check" class="w-4 h-4 text-neon-400"></i>
+          </div>
+          <span id="dash-net-profit" class="text-lg md:text-xl font-black text-white block tracking-tight">R$ 0,00</span>
+          <span class="text-[10px] text-neon-400 font-medium mt-0.5 block">Descontado Jr (50%)</span>
         </div>
       </div>
 
-      <div class="grid grid-cols-2 gap-3">
-        <div class="glass-card p-3.5 rounded-2xl border-l-4 border-emerald-500">
-          <span class="text-[10px] font-medium text-slate-400 block">Lucro Líquido Escritório</span>
-          <span id="dash-net-profit" class="text-base font-black text-slate-100 block mt-0.5">R$ 0,00</span>
-          <span class="text-[9px] text-emerald-400 block mt-0.5">Descontada comissão Jr</span>
-        </div>
-
-        <div class="glass-card p-3.5 rounded-2xl border-l-4 border-amber-500">
-          <span class="text-[10px] font-medium text-slate-400 block">Entradas em Dinheiro</span>
-          <span id="dash-total-advance" class="text-base font-black text-amber-400 block mt-0.5">R$ 0,00</span>
-          <span class="text-[9px] text-slate-500 block mt-0.5">Em caixa imediato</span>
-        </div>
-      </div>
-
-      <div class="glass-card p-3.5 rounded-2xl flex items-center justify-between bg-gradient-to-r from-purple-900/20 to-slate-900">
-        <div class="flex items-center space-x-3">
-          <div class="p-2.5 bg-ai-500/20 text-ai-400 rounded-xl border border-ai-500/30">
-            <i data-lucide="user-check" class="w-5 h-5"></i>
+      <!-- PAINEL REPASSE JÚNIOR -->
+      <div class="glass-card p-4 rounded-2xl flex items-center justify-between bg-gradient-to-r from-neon-950/40 via-slate-900 to-slate-900 border border-neon-500/20">
+        <div class="flex items-center space-x-3.5">
+          <div class="p-3 bg-neon-500/20 text-neon-400 rounded-xl border border-neon-500/30">
+            <i data-lucide="users" class="w-5 h-5"></i>
           </div>
           <div>
-            <span class="text-[10px] text-slate-400 font-medium block">Comissão Total Júnior (50%)</span>
-            <span id="dash-junior-commission" class="text-base font-bold text-ai-400">R$ 0,00</span>
+            <span class="text-xs text-slate-400 font-bold uppercase tracking-wider">Comissão Advogado Júnior (50%)</span>
+            <span id="dash-junior-commission" class="text-base md:text-lg font-black text-neon-400 block">R$ 0,00</span>
           </div>
         </div>
         <div class="text-right">
-          <span class="text-[9px] text-slate-500 block">Faturamento Total</span>
-          <span id="dash-total-revenue" class="text-xs font-extrabold text-slate-300">R$ 0,00</span>
+          <span class="text-[10px] text-slate-400 font-semibold block">Total de Honorários Bruto</span>
+          <span id="dash-total-revenue" class="text-xs md:text-sm font-extrabold text-slate-200">R$ 0,00</span>
         </div>
       </div>
 
-      <div>
-        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2.5">Status Geral dos Casos</h3>
-        <div class="grid grid-cols-4 gap-2 text-center">
-          <div onclick="switchTab('contratos')" class="glass-card p-2.5 rounded-xl cursor-pointer active:scale-95 transition-transform">
-            <span id="count-active" class="text-base font-black text-brand-400 block">0</span>
-            <span class="text-[9px] font-medium text-slate-400 block">Ativos</span>
+      <!-- CARDS DE STATUS -->
+      <div class="space-y-2.5">
+        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Métricas de Casos</h3>
+        <div class="grid grid-cols-4 gap-2.5">
+          <div onclick="switchTab('contratos')" class="glass-card p-3 rounded-2xl text-center cursor-pointer active:scale-95 transition-transform">
+            <span id="count-active" class="text-lg font-black text-cyan-400 block">0</span>
+            <span class="text-[10px] font-bold text-slate-400 block">Ativos</span>
           </div>
-          <div onclick="switchTab('possiveis')" class="glass-card p-2.5 rounded-xl cursor-pointer active:scale-95 transition-transform">
-            <span id="count-prospects" class="text-base font-black text-sky-400 block">0</span>
-            <span class="text-[9px] font-medium text-slate-400 block">Possíveis</span>
+          <div onclick="switchTab('possiveis')" class="glass-card p-3 rounded-2xl text-center cursor-pointer active:scale-95 transition-transform">
+            <span id="count-prospects" class="text-lg font-black text-sky-400 block">0</span>
+            <span class="text-[10px] font-bold text-slate-400 block">Possíveis</span>
           </div>
-          <div onclick="switchTab('pendentes')" class="glass-card p-2.5 rounded-xl cursor-pointer active:scale-95 transition-transform">
-            <span id="count-pending" class="text-base font-black text-amber-400 block">0</span>
-            <span class="text-[9px] font-medium text-slate-400 block">Pendentes</span>
+          <div onclick="switchTab('pendentes')" class="glass-card p-3 rounded-2xl text-center cursor-pointer active:scale-95 transition-transform">
+            <span id="count-pending" class="text-lg font-black text-amber-400 block">0</span>
+            <span class="text-[10px] font-bold text-slate-400 block">Pendentes</span>
           </div>
-          <div onclick="switchTab('encerrados')" class="glass-card p-2.5 rounded-xl cursor-pointer active:scale-95 transition-transform">
-            <span id="count-closed" class="text-base font-black text-emerald-400 block">0</span>
-            <span class="text-[9px] font-medium text-slate-400 block">Encerrados</span>
+          <div onclick="switchTab('encerrados')" class="glass-card p-3 rounded-2xl text-center cursor-pointer active:scale-95 transition-transform">
+            <span id="count-closed" class="text-lg font-black text-emerald-400 block">0</span>
+            <span class="text-[10px] font-bold text-slate-400 block">Encerrados</span>
           </div>
         </div>
       </div>
 
-      <div>
-        <div class="flex justify-between items-center mb-2.5">
-          <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Últimos Casos Lidos da Planilha</h3>
-          <button onclick="switchTab('contratos')" class="text-xs text-brand-400 font-semibold hover:underline">Ver todos</button>
+      <!-- ÚLTIMOS CASOS -->
+      <div class="space-y-3">
+        <div class="flex justify-between items-center">
+          <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Processos Recentes na Planilha</h3>
+          <button onclick="switchTab('contratos')" class="text-xs text-cyan-400 font-bold hover:underline">Ver Todos</button>
         </div>
-        <div id="recent-list" class="space-y-3">
+        <div id="recent-list" class="grid grid-cols-1 md:grid-cols-2 gap-3.5">
           <!-- Renderizado via JS -->
         </div>
       </div>
     </div>
 
-    <!-- TAB 2: TODOS OS CONTRATOS -->
-    <div id="tab-contratos" class="tab-content hidden space-y-3">
-      <div class="glass-card p-3 rounded-2xl space-y-2.5">
-        <div class="relative">
-          <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-3"></i>
-          <input type="text" id="search-input" oninput="filterCases()" placeholder="Buscar cliente, BPC/LOAS, Gestante, etc..." class="w-full bg-slate-900/90 border border-slate-700/60 rounded-xl pl-9 pr-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-brand-500" />
+    <!-- TAB 2: COMANDO DE VOZ E BUSCA POR ÁUDIO -->
+    <div id="tab-voz" class="tab-content hidden space-y-5">
+      <div class="glass-card p-6 rounded-3xl text-center space-y-4 border border-cyan-500/30 relative overflow-hidden">
+        <div class="absolute -right-10 -top-10 w-32 h-32 bg-cyan-500/10 rounded-full blur-2xl pointer-events-none"></div>
+
+        <div class="inline-flex p-3 bg-cyan-500/10 rounded-2xl text-cyan-400 mb-1">
+          <i data-lucide="mic" class="w-8 h-8"></i>
         </div>
 
-        <div class="grid grid-cols-2 gap-2 text-xs">
-          <select id="filter-year" onchange="filterCases()" class="bg-slate-900 border border-slate-700/60 rounded-xl px-2.5 py-1.5 text-slate-300 focus:outline-none">
+        <h2 class="text-lg font-black text-white">Assistente Jurídico por Voz</h2>
+        <p class="text-xs text-slate-300 max-w-md mx-auto leading-relaxed">
+          Toque no botão e diga o nome do cliente ou tipo de processo (ex: <strong class="text-cyan-400">"Buscar Maria"</strong>, <strong class="text-cyan-400">"BPC LOAS"</strong>, <strong class="text-cyan-400">"Gestante"</strong> ou <strong class="text-cyan-400">"Pendentes"</strong>).
+        </p>
+
+        <!-- BOTAO GRANDE DE MICROFONE -->
+        <div class="relative inline-block py-2">
+          <button type="button" id="btn-voice-tab-mic" onclick="toggleTabVoiceRecognition()" class="w-20 h-20 bg-gradient-to-tr from-cyan-500 to-cyan-400 hover:from-cyan-400 hover:to-cyan-300 text-slate-950 rounded-full font-bold shadow-2xl shadow-cyan-500/40 flex items-center justify-center mx-auto active:scale-95 transition-all">
+            <i data-lucide="mic" class="w-8 h-8 stroke-[2.5]"></i>
+          </button>
+        </div>
+
+        <!-- TRANSPLANTE DO TEXTO TRANSCITO EM TEMPO REAL -->
+        <div class="bg-slate-950/80 p-3.5 rounded-2xl border border-slate-800/80 max-w-lg mx-auto">
+          <span class="text-[10px] text-slate-500 font-bold uppercase block mb-1">Transcrição em Tempo Real:</span>
+          <p id="voice-tab-transcript" class="text-sm font-semibold text-cyan-300 min-h-[1.5rem] italic">
+            "Aguardando o seu comando de voz..."
+          </p>
+        </div>
+      </div>
+
+      <!-- CAMPO DE BUSCA SINCRONIZADO COM ÁUDIO -->
+      <div class="glass-card p-3.5 rounded-2xl space-y-2">
+        <label class="block text-xs font-bold text-slate-400">Texto Filtrado pela Voz:</label>
+        <div class="relative">
+          <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5"></i>
+          <input type="text" id="voice-search-input" oninput="onVoiceInputManualChange()" placeholder="O texto que você ditar aparecerá aqui..." class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-10 py-2.5 text-xs text-white focus:outline-none focus:border-cyan-500" />
+          <button onclick="clearVoiceSearch()" class="absolute right-3 top-2.5 text-slate-500 hover:text-slate-300 p-1">
+            <i data-lucide="x" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- LISTA DE RESULTADOS ENCONTRADOS PELO ÁUDIO -->
+      <div class="space-y-3">
+        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Processos Encontrados pelo Áudio</h3>
+        <div id="voice-results-list" class="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+          <!-- Renderizado via JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: TODOS OS PROCESSO -->
+    <div id="tab-contratos" class="tab-content hidden space-y-4">
+      <div class="glass-card p-4 rounded-2xl space-y-3">
+        <div class="relative">
+          <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3.5 top-3"></i>
+          <input type="text" id="search-input" oninput="filterCases()" placeholder="Buscar cliente, BPC/LOAS, Gestante, Aposentadoria..." class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-500" />
+        </div>
+
+        <div class="grid grid-cols-2 gap-2.5 text-xs">
+          <select id="filter-year" onchange="filterCases()" class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-300 focus:outline-none focus:border-cyan-500">
             <option value="ALL">Todos os Anos</option>
             <option value="2026">2026</option>
             <option value="2025">2025</option>
             <option value="2024">2024</option>
           </select>
 
-          <select id="filter-area" onchange="filterCases()" class="bg-slate-900 border border-slate-700/60 rounded-xl px-2.5 py-1.5 text-slate-300 focus:outline-none">
+          <select id="filter-area" onchange="filterCases()" class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-300 focus:outline-none focus:border-cyan-500">
             <option value="ALL">Todas as Áreas</option>
             <option value="Previdenciário">Previdenciário</option>
             <option value="Trabalhista">Trabalhista</option>
@@ -218,138 +327,142 @@
       </div>
 
       <div class="flex items-center justify-between px-1">
-        <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider">Lista de Processos Fechados</h3>
-        <span id="badge-total-filtered" class="text-[10px] bg-slate-800 border border-slate-700 px-2 py-0.5 rounded-full text-brand-400 font-bold">0</span>
+        <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider">Lista de Processos Ativos</h3>
+        <span id="badge-total-filtered" class="text-[10px] bg-slate-800 border border-slate-700 px-2.5 py-0.5 rounded-full text-cyan-400 font-black">0</span>
       </div>
 
-      <div id="contracts-list" class="space-y-3">
+      <div id="contracts-list" class="grid grid-cols-1 md:grid-cols-2 gap-3.5">
         <!-- Renderizado via JS -->
       </div>
     </div>
 
-    <!-- TAB 3: POSSÍVEIS CLIENTES -->
-    <div id="tab-possiveis" class="tab-content hidden space-y-3">
+    <!-- TAB 4: POSSÍVEIS CLIENTES (LEADS) -->
+    <div id="tab-possiveis" class="tab-content hidden space-y-4">
       <div class="flex items-center justify-between px-1">
         <div>
-          <h3 class="text-sm font-bold text-slate-200">Possíveis Clientes (Leads)</h3>
-          <p class="text-[10px] text-slate-400">Consultas e propostas pendentes de aceite.</p>
+          <h3 class="text-sm font-black text-white">Possíveis Clientes (Leads)</h3>
+          <p class="text-[10px] text-slate-400">Consultas e propostas aguardando confirmação.</p>
         </div>
-        <span id="badge-prospects-count" class="text-xs bg-sky-500/20 text-sky-400 border border-sky-500/30 px-2.5 py-0.5 rounded-full font-bold">0</span>
+        <span id="badge-prospects-count" class="text-xs bg-sky-500/20 text-sky-400 border border-sky-500/30 px-3 py-1 rounded-full font-black">0</span>
       </div>
-      <div id="prospects-list" class="space-y-3"></div>
+      <div id="prospects-list" class="grid grid-cols-1 md:grid-cols-2 gap-3.5"></div>
     </div>
 
-    <!-- TAB 4: PENDÊNCIAS -->
-    <div id="tab-pendentes" class="tab-content hidden space-y-3">
+    <!-- TAB 5: PENDÊNCIAS -->
+    <div id="tab-pendentes" class="tab-content hidden space-y-4">
       <div class="flex items-center justify-between px-1">
         <div>
-          <h3 class="text-sm font-bold text-slate-200">Casos com Pendências</h3>
-          <p class="text-[10px] text-slate-400">Verifique prazos, laudos e documentos.</p>
+          <h3 class="text-sm font-black text-white">Casos com Pendências</h3>
+          <p class="text-[10px] text-slate-400">Verifique certidões, laudos, prazos e faltas de documentos.</p>
         </div>
-        <span id="badge-pending-count" class="text-xs bg-amber-500/20 text-amber-400 border border-amber-500/30 px-2.5 py-0.5 rounded-full font-bold">0</span>
+        <span id="badge-pending-count" class="text-xs bg-amber-500/20 text-amber-400 border border-amber-500/30 px-3 py-1 rounded-full font-black">0</span>
       </div>
-      <div id="pending-list" class="space-y-3"></div>
+      <div id="pending-list" class="grid grid-cols-1 md:grid-cols-2 gap-3.5"></div>
     </div>
 
-    <!-- TAB 5: ENCERRADOS -->
-    <div id="tab-encerrados" class="tab-content hidden space-y-3">
+    <!-- TAB 6: ENCERRADOS -->
+    <div id="tab-encerrados" class="tab-content hidden space-y-4">
       <div class="flex items-center justify-between px-1">
         <div>
-          <h3 class="text-sm font-bold text-slate-200">Processos Finalizados</h3>
+          <h3 class="text-sm font-black text-white">Processos Finalizados</h3>
           <p class="text-[10px] text-slate-400">Histórico de casos concluídos com êxito.</p>
         </div>
-        <span id="badge-closed-count" class="text-xs bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2.5 py-0.5 rounded-full font-bold">0</span>
+        <span id="badge-closed-count" class="text-xs bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-3 py-1 rounded-full font-black">0</span>
       </div>
-      <div id="closed-list" class="space-y-3"></div>
+      <div id="closed-list" class="grid grid-cols-1 md:grid-cols-2 gap-3.5"></div>
     </div>
 
   </main>
 
-  <!-- NAVEGAÇÃO INFERIOR NATIBA -->
-  <nav class="glass-nav fixed bottom-0 left-0 right-0 z-30 safe-bottom px-2 py-1.5">
+  <!-- NAVEGAÇÃO INFERIOR PARA CELULAR -->
+  <nav class="glass-nav md:hidden fixed bottom-0 left-0 right-0 z-40 px-2 py-2">
     <div class="flex justify-around items-center">
-      <button onclick="switchTab('inicio')" id="nav-inicio" class="nav-btn flex flex-col items-center py-1 px-2 text-brand-400 transition-colors">
+      <button onclick="switchTab('inicio')" id="nav-inicio" class="nav-btn flex flex-col items-center py-1 px-2 text-cyan-400 transition-colors">
         <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
-        <span class="text-[9px] mt-1 font-semibold">Início</span>
+        <span class="text-[9px] mt-1 font-bold">Início</span>
       </button>
 
-      <button onclick="switchTab('contratos')" id="nav-contratos" class="nav-btn flex flex-col items-center py-1 px-2 text-slate-400 hover:text-slate-200 transition-colors">
+      <button onclick="switchTab('voz')" id="nav-voz" class="nav-btn flex flex-col items-center py-1 px-2 text-slate-400 hover:text-white transition-colors">
+        <i data-lucide="mic" class="w-5 h-5"></i>
+        <span class="text-[9px] mt-1 font-bold">Voz</span>
+      </button>
+
+      <button onclick="switchTab('contratos')" id="nav-contratos" class="nav-btn flex flex-col items-center py-1 px-2 text-slate-400 hover:text-white transition-colors">
         <i data-lucide="folder-open" class="w-5 h-5"></i>
-        <span class="text-[9px] mt-1 font-semibold">Processos</span>
+        <span class="text-[9px] mt-1 font-bold">Processos</span>
       </button>
 
-      <button onclick="switchTab('possiveis')" id="nav-possiveis" class="nav-btn flex flex-col items-center py-1 px-2 text-slate-400 hover:text-slate-200 transition-colors">
+      <button onclick="switchTab('possiveis')" id="nav-possiveis" class="nav-btn flex flex-col items-center py-1 px-2 text-slate-400 hover:text-white transition-colors">
         <i data-lucide="user-plus" class="w-5 h-5"></i>
-        <span class="text-[9px] mt-1 font-semibold">Possíveis</span>
+        <span class="text-[9px] mt-1 font-bold">Possíveis</span>
       </button>
 
-      <button onclick="switchTab('pendentes')" id="nav-pendentes" class="nav-btn flex flex-col items-center py-1 px-2 text-slate-400 hover:text-slate-200 transition-colors">
+      <button onclick="switchTab('pendentes')" id="nav-pendentes" class="nav-btn flex flex-col items-center py-1 px-2 text-slate-400 hover:text-white transition-colors">
         <i data-lucide="alert-circle" class="w-5 h-5"></i>
-        <span class="text-[9px] mt-1 font-semibold">Pendentes</span>
+        <span class="text-[9px] mt-1 font-bold">Pendentes</span>
       </button>
 
-      <button onclick="switchTab('encerrados')" id="nav-encerrados" class="nav-btn flex flex-col items-center py-1 px-2 text-slate-400 hover:text-slate-200 transition-colors">
+      <button onclick="switchTab('encerrados')" id="nav-encerrados" class="nav-btn flex flex-col items-center py-1 px-2 text-slate-400 hover:text-white transition-colors">
         <i data-lucide="check-circle" class="w-5 h-5"></i>
-        <span class="text-[9px] mt-1 font-semibold">Encerrados</span>
+        <span class="text-[9px] mt-1 font-bold">Encerrados</span>
       </button>
     </div>
   </nav>
 
-  <!-- MODAL CADASTRO -->
+  <!-- MODAL CADASTRO / EDIÇÃO -->
   <div id="modal-case" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
     <div class="bg-slate-900 border border-slate-800 w-full sm:max-w-lg rounded-t-3xl sm:rounded-2xl max-h-[92vh] overflow-y-auto no-scrollbar slide-up p-5 space-y-4 shadow-2xl">
       
       <div class="flex justify-between items-center border-b border-slate-800 pb-3">
         <div class="flex items-center space-x-2">
-          <div class="p-1.5 bg-brand-500/20 text-brand-400 rounded-lg">
+          <div class="p-2 bg-cyan-500/20 text-cyan-400 rounded-xl">
             <i data-lucide="file-text" class="w-4 h-4"></i>
           </div>
-          <h3 id="modal-title" class="text-sm font-bold text-slate-100">Novo Caso Advocatício</h3>
+          <h3 id="modal-title" class="text-sm font-black text-white">Novo Caso Advocatício</h3>
         </div>
-        <button onclick="closeModal()" class="text-slate-400 hover:text-slate-200 p-1">
+        <button onclick="closeModal()" class="text-slate-400 hover:text-white p-1">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
 
-      <!-- BOTÃO DITADO POR VOZ -->
-      <div class="bg-slate-950 p-3 rounded-2xl border border-slate-800 flex items-center justify-between">
-        <div class="flex items-center space-x-2.5">
-          <button type="button" id="btn-mic-record" onclick="toggleVoiceRecognition()" class="p-3 bg-brand-500 text-slate-950 rounded-xl font-bold shadow-md hover:bg-brand-400 transition-all">
-            <i data-lucide="mic" class="w-5 h-5"></i>
-          </button>
-          <div>
-            <span class="text-xs font-bold text-slate-200 block">Cadastrar por Voz (IA)</span>
-            <span id="voice-status-text" class="text-[10px] text-slate-400">Toque no mic e dite: "Maria LOAS honorarios 3000 entrada 500"</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- IA INSIGHT BOX -->
-      <div id="ai-insight-box" class="hidden bg-gradient-to-r from-ai-600/20 to-slate-900 border border-ai-500/30 p-3 rounded-2xl space-y-1.5">
-        <div class="flex items-center space-x-1.5 text-ai-400 font-bold text-xs">
+      <!-- PAINEL DA IA LOCAL -->
+      <div id="ai-insight-box" class="hidden bg-gradient-to-r from-neon-950/40 to-slate-900 border border-neon-500/30 p-3 rounded-2xl space-y-1">
+        <div class="flex items-center space-x-1.5 text-neon-400 font-bold text-xs">
           <i data-lucide="sparkles" class="w-4 h-4"></i>
-          <span>IA Offline - Análise de Precedentes</span>
+          <span>IA Local - Análise de Histórico</span>
         </div>
-        <p id="ai-insight-text" class="text-[11px] text-slate-300 leading-snug"></p>
+        <p id="ai-insight-text" class="text-[11px] text-slate-300 leading-relaxed"></p>
       </div>
 
-      <form id="case-form" onsubmit="saveCase(event)" class="space-y-3">
+      <form id="case-form" onsubmit="saveCase(event)" class="space-y-3.5">
         <input type="hidden" id="field-id" />
 
+        <!-- INPUT CLIENTE COM DITADO DEDICADO -->
         <div>
-          <label class="block text-xs font-medium text-slate-400 mb-1">Nome do Cliente *</label>
-          <input type="text" id="field-client-name" required placeholder="Ex: Maria das Dores Silva" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-brand-500" />
+          <label class="block text-xs font-bold text-slate-400 mb-1">Nome do Cliente *</label>
+          <div class="relative flex items-center">
+            <input type="text" id="field-client-name" required placeholder="Ex: Maria das Dores Silva" class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-3 pr-10 py-2.5 text-xs text-white focus:outline-none focus:border-cyan-500" />
+            <button type="button" title="Ditar nome do cliente" onclick="listenDirectToInput('field-client-name')" class="absolute right-2 p-1.5 bg-slate-800 hover:bg-cyan-500 hover:text-slate-950 text-cyan-400 rounded-lg transition-colors">
+              <i data-lucide="mic" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
         </div>
 
+        <!-- INPUT OBJETO COM DITADO DEDICADO -->
         <div>
-          <label class="block text-xs font-medium text-slate-400 mb-1">Objeto do Processo (Ex: BPC/LOAS, Gestante, Aposentadoria) *</label>
-          <input type="text" id="field-process-object" required oninput="runOfflineAIAnalysis()" placeholder="Ex: BPC/LOAS Autismo ou Salário-Maternidade" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-brand-500" />
+          <label class="block text-xs font-bold text-slate-400 mb-1">Objeto do Processo (Ex: BPC/LOAS, Gestante, Aposentadoria) *</label>
+          <div class="relative flex items-center">
+            <input type="text" id="field-process-object" required oninput="runOfflineAIAnalysis()" placeholder="Ex: BPC/LOAS Autismo ou Salário-Maternidade" class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-3 pr-10 py-2.5 text-xs text-white focus:outline-none focus:border-cyan-500" />
+            <button type="button" title="Ditar objeto do processo" onclick="listenDirectToInput('field-process-object')" class="absolute right-2 p-1.5 bg-slate-800 hover:bg-cyan-500 hover:text-slate-950 text-cyan-400 rounded-lg transition-colors">
+              <i data-lucide="mic" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
         </div>
 
         <div class="grid grid-cols-2 gap-2.5">
           <div>
-            <label class="block text-xs font-medium text-slate-400 mb-1">Área do Direito</label>
-            <select id="field-case-area" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-brand-500">
+            <label class="block text-xs font-bold text-slate-400 mb-1">Área do Direito</label>
+            <select id="field-case-area" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-cyan-500">
               <option value="Previdenciário">Previdenciário</option>
               <option value="Trabalhista">Trabalhista</option>
               <option value="Cível">Cível</option>
@@ -359,8 +472,8 @@
           </div>
 
           <div>
-            <label class="block text-xs font-medium text-slate-400 mb-1">Status do Caso *</label>
-            <select id="field-case-status" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-brand-500">
+            <label class="block text-xs font-bold text-slate-400 mb-1">Status do Caso *</label>
+            <select id="field-case-status" onchange="toggleFormFinancialFields()" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-cyan-500">
               <option value="Ativo">Contrato Fechado (Ativo)</option>
               <option value="Possivel">Possível Cliente (Lead)</option>
               <option value="Pendente">Pendência / Verificar</option>
@@ -369,59 +482,74 @@
           </div>
         </div>
 
-        <div class="grid grid-cols-3 gap-2">
-          <div>
-            <label class="block text-xs font-medium text-slate-400 mb-1">Tipo Honorário</label>
-            <select id="field-fee-type" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-2.5 py-2 text-xs text-slate-100 focus:outline-none focus:border-brand-500">
-              <option value="Fixo">Valor Fixo</option>
-              <option value="Porcentagem">Porcentagem (%)</option>
-              <option value="Parcelado">Parcelado</option>
-            </select>
-          </div>
-
-          <div>
-            <label class="block text-xs font-medium text-slate-400 mb-1">Valor / %</label>
-            <input type="number" step="0.01" id="field-fee-value" required placeholder="Ex: 3000" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-brand-500" />
-          </div>
-
-          <div>
-            <label class="block text-xs font-medium text-slate-400 mb-1">Entrada (R$)</label>
-            <input type="number" step="0.01" id="field-advance-amount" placeholder="0.00" value="0" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-brand-500" />
-          </div>
-        </div>
-
-        <div>
-          <label class="block text-xs font-medium text-slate-400 mb-1">Situação Processual / Financeira</label>
-          <select id="field-financial-status" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-brand-500">
-            <option value="Em Processo">Em Processo (Andamento)</option>
-            <option value="Causa Ganha">Causa Ganha</option>
-            <option value="Entrou em Acordo">Entrou em Acordo</option>
-            <option value="Recebendo Parcelado">Recebendo Parcelado</option>
-            <option value="Integralmente Pago">Integralmente Pago</option>
-          </select>
-        </div>
-
+        <!-- SELETOR SE O PROCESSO ESTÁ PRONTO -->
         <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 flex items-center justify-between">
           <div>
-            <span class="text-xs font-bold text-ai-400 block">Repassar 50% para Advogado Júnior?</span>
-            <span class="text-[10px] text-slate-400">Deduz do lucro líquido e registra repasse.</span>
+            <span class="text-xs font-bold text-white block">Processo Está Pronto?</span>
+            <span class="text-[10px] text-slate-400">Marque se os documentos/petição estão prontos.</span>
           </div>
           <label class="relative inline-flex items-center cursor-pointer">
-            <input type="checkbox" id="field-junior-commission" class="sr-only peer" />
-            <div class="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-ai-600"></div>
+            <input type="checkbox" id="field-process-ready" class="sr-only peer" />
+            <div class="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
           </label>
         </div>
 
+        <!-- BLOCO FINANCEIRO (OCULTADO AUTOMATICAMENTE SE FOR POSSÍVEL CLIENTE) -->
+        <div id="financial-form-block" class="space-y-3 pt-1 border-t border-slate-800/80">
+          <div class="grid grid-cols-3 gap-2">
+            <div>
+              <label class="block text-xs font-bold text-slate-400 mb-1">Tipo Honorário</label>
+              <select id="field-fee-type" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-2 py-2.5 text-xs text-white focus:outline-none focus:border-cyan-500">
+                <option value="Fixo">Valor Fixo</option>
+                <option value="Porcentagem">Porcentagem (%)</option>
+                <option value="Parcelado">Parcelado</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-400 mb-1">Valor / %</label>
+              <input type="number" step="0.01" id="field-fee-value" placeholder="Ex: 3000" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-cyan-500" />
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-400 mb-1">Entrada (R$)</label>
+              <input type="number" step="0.01" id="field-advance-amount" placeholder="0.00" value="0" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-cyan-500" />
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-400 mb-1">Situação Financeira</label>
+            <select id="field-financial-status" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-cyan-500">
+              <option value="Em Processo">Em Processo (Andamento)</option>
+              <option value="Causa Ganha">Causa Ganha</option>
+              <option value="Entrou em Acordo">Entrou em Acordo</option>
+              <option value="Recebendo Parcelado">Recebendo Parcelado</option>
+              <option value="Integralmente Pago">Integralmente Pago</option>
+            </select>
+          </div>
+
+          <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 flex items-center justify-between">
+            <div>
+              <span class="text-xs font-bold text-neon-400 block">Repassar 50% para Advogado Júnior?</span>
+              <span class="text-[10px] text-slate-400">Calcula metade dos honorários para comissão.</span>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" id="field-junior-commission" class="sr-only peer" />
+              <div class="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-neon-600"></div>
+            </label>
+          </div>
+        </div>
+
         <div>
-          <label class="block text-xs font-medium text-slate-400 mb-1">Notas / Detalhes das Pendências</label>
-          <textarea id="field-notes" rows="2" placeholder="Ex: Certidão pendente..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-brand-500"></textarea>
+          <label class="block text-xs font-bold text-slate-400 mb-1">Notas / Detalhes das Pendências</label>
+          <textarea id="field-notes" rows="2" placeholder="Ex: Faltam comprovantes de residência..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-500"></textarea>
         </div>
 
         <div class="pt-2 flex space-x-2">
-          <button type="button" onclick="closeModal()" class="w-1/3 bg-slate-800 hover:bg-slate-700 py-2.5 rounded-xl text-xs font-semibold text-slate-300">
+          <button type="button" onclick="closeModal()" class="w-1/3 bg-slate-800 hover:bg-slate-700 py-3 rounded-xl text-xs font-bold text-slate-300 transition-colors">
             Cancelar
           </button>
-          <button type="submit" id="btn-save" class="w-2/3 bg-brand-500 hover:bg-brand-400 text-slate-950 py-2.5 rounded-xl text-xs font-bold shadow-lg shadow-brand-500/20 active:scale-95 transition-transform">
+          <button type="submit" class="w-2/3 bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-400 hover:to-cyan-500 text-slate-950 py-3 rounded-xl text-xs font-black shadow-lg shadow-cyan-500/20 active:scale-95 transition-transform">
             Salvar e Sincronizar
           </button>
         </div>
@@ -429,25 +557,25 @@
     </div>
   </div>
 
+  <!-- JAVASCRIPT LOGIC -->
   <script>
-    // URL DA SUA PLANILHA GOOGLE APPS SCRIPT
+    // URL PADRONIZADA DO GOOGLE APPS SCRIPT
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyQuWABpuw1jhd2kvZR25ikOvzkXqRVPzZew_ob-KBzZ7_v7qYEhezQsvA_an95p_wL/exec";
 
     let cases = JSON.parse(localStorage.getItem('jusflow_cases_db') || '[]');
-    let isRecording = false;
-    let recognition = null;
+    let tabSpeechRecognition = null;
+    let inputSpeechRecognition = null;
 
     document.addEventListener('DOMContentLoaded', () => {
       lucide.createIcons();
-      initSpeechRecognition();
       renderAll();
-      fetchCasesFromSheet(); // LEITURA EM TEMPO REAL AO ABRIR
+      fetchCasesFromSheet(); // LEITURA INICIAL DA PLANILHA
     });
 
-    // 1. LEITURA EM TEMPO REAL DA PLANILHA VIA JSONP
+    // 1. LEITURA EM TEMPO REAL VIA JSONP (SEM ERROS DE CORS)
     function fetchCasesFromSheet() {
-      const statusEl = document.getElementById('sync-status');
-      statusEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-amber-400 inline-block animate-ping"></span> <span>Lendo Planilha...</span>`;
+      const statusText = document.getElementById('sync-status-text');
+      statusText.innerHTML = `Lendo dados da Planilha...`;
 
       const script = document.createElement('script');
       const callbackName = 'onSheetDataLoaded_' + Date.now();
@@ -460,23 +588,23 @@
           cases = response;
           localStorage.setItem('jusflow_cases_db', JSON.stringify(cases));
           renderAll();
-          statusEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block"></span> <span>Atualizado da Planilha</span>`;
+          statusText.innerHTML = `Sincronizado com Planilha`;
         } else {
-          statusEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block"></span> <span>Sincronizado</span>`;
+          statusText.innerHTML = `Conectado à Planilha`;
         }
       };
 
       script.src = `${SCRIPT_URL}?callback=${callbackName}`;
       script.onerror = function() {
-        statusEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-rose-500 inline-block"></span> <span>Modo Offline</span>`;
+        statusText.innerHTML = `Modo Offline (Salvo Local)`;
       };
       document.body.appendChild(script);
     }
 
     // 2. ESCRITA EM TEMPO REAL NA PLANILHA
     function syncWithGoogleSheets(data) {
-      const statusEl = document.getElementById('sync-status');
-      statusEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-amber-400 inline-block animate-ping"></span> <span>Salvando na Planilha...</span>`;
+      const statusText = document.getElementById('sync-status-text');
+      statusText.innerHTML = `Salvando na Planilha...`;
 
       fetch(SCRIPT_URL, {
         method: 'POST',
@@ -484,29 +612,197 @@
         body: JSON.stringify(data)
       })
       .then(res => res.json())
-      .then(res => {
-        statusEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block"></span> <span>Salvo na Planilha!</span>`;
+      .then(() => {
+        statusText.innerHTML = `Salvo na Planilha!`;
+        setTimeout(() => { statusText.innerHTML = `Sincronizado com Planilha`; }, 3000);
       })
       .catch(err => {
-        console.warn("Sincronizado localmente. Planilha responderá no próximo fetch.", err);
-        statusEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block"></span> <span>Salvo Localmente</span>`;
+        console.warn("Sincronizado localmente.", err);
+        statusText.innerHTML = `Salvo Localmente`;
       });
     }
 
+    // 3. RECONHECIMENTO DE VOZ DA TAB DE ÁUDIO (CORRIGIDO)
+    function toggleTabVoiceRecognition() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        alert("Seu navegador não suporta a API de áudio. Tente usar o Google Chrome ou Safari no iPhone.");
+        return;
+      }
+
+      const micBtn = document.getElementById('btn-voice-tab-mic');
+      const transcriptEl = document.getElementById('voice-tab-transcript');
+      const inputEl = document.getElementById('voice-search-input');
+
+      if (tabSpeechRecognition) {
+        tabSpeechRecognition.stop();
+        tabSpeechRecognition = null;
+        micBtn.classList.remove('mic-active-ring', 'bg-rose-500');
+        micBtn.classList.add('bg-gradient-to-tr', 'from-cyan-500', 'to-cyan-400');
+        return;
+      }
+
+      tabSpeechRecognition = new SpeechRecognition();
+      tabSpeechRecognition.lang = 'pt-BR';
+      tabSpeechRecognition.continuous = false;
+      tabSpeechRecognition.interimResults = true;
+
+      micBtn.classList.add('mic-active-ring', 'bg-rose-500');
+
+      tabSpeechRecognition.onstart = () => {
+        transcriptEl.innerText = "Escutando... Dite o nome do cliente ou processo.";
+      };
+
+      tabSpeechRecognition.onresult = (event) => {
+        let transcriptText = '';
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          transcriptText += event.results[i][0].transcript;
+        }
+
+        // PREENCHE O TEXTO EM TEMPO REAL NO INPUT
+        transcriptEl.innerText = `"${transcriptText}"`;
+        inputEl.value = transcriptText;
+        filterVoiceResults(transcriptText);
+      };
+
+      tabSpeechRecognition.onerror = () => stopTabVoice();
+      tabSpeechRecognition.onend = () => stopTabVoice();
+
+      tabSpeechRecognition.start();
+    }
+
+    function stopTabVoice() {
+      const micBtn = document.getElementById('btn-voice-tab-mic');
+      if (micBtn) {
+        micBtn.classList.remove('mic-active-ring', 'bg-rose-500');
+        micBtn.classList.add('bg-gradient-to-tr', 'from-cyan-500', 'to-cyan-400');
+      }
+      tabSpeechRecognition = null;
+    }
+
+    function onVoiceInputManualChange() {
+      const val = document.getElementById('voice-search-input').value;
+      filterVoiceResults(val);
+    }
+
+    function clearVoiceSearch() {
+      document.getElementById('voice-search-input').value = '';
+      document.getElementById('voice-tab-transcript').innerText = '"Aguardando o seu comando de voz..."';
+      filterVoiceResults('');
+    }
+
+    function filterVoiceResults(queryText) {
+      const cleanQuery = queryText.toLowerCase().trim();
+      const resultsContainer = document.getElementById('voice-results-list');
+
+      if (!cleanQuery) {
+        resultsContainer.innerHTML = `<p class="text-xs text-slate-500 text-center py-6 col-span-2">Dite algo no microfone para filtrar instantaneamente.</p>`;
+        return;
+      }
+
+      const matches = cases.filter(c => 
+        c.clientName.toLowerCase().includes(cleanQuery) ||
+        c.processObject.toLowerCase().includes(cleanQuery) ||
+        c.caseArea.toLowerCase().includes(cleanQuery) ||
+        c.caseStatus.toLowerCase().includes(cleanQuery)
+      );
+
+      resultsContainer.innerHTML = matches.length
+        ? matches.map(buildCaseCard).join('')
+        : `<p class="text-xs text-slate-500 text-center py-6 col-span-2">Nenhum cliente encontrado com "${cleanQuery}".</p>`;
+
+      lucide.createIcons();
+    }
+
+    // 4. DITADO DIRETO NOS INPUTS DO FORMULÁRIO (ÍCONES DE MIC NOS INPUTS)
+    function listenDirectToInput(inputId) {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        alert("Navegador não suporta reconhecimento de voz.");
+        return;
+      }
+
+      const inputEl = document.getElementById(inputId);
+      
+      if (inputSpeechRecognition) {
+        inputSpeechRecognition.stop();
+        inputSpeechRecognition = null;
+        return;
+      }
+
+      inputSpeechRecognition = new SpeechRecognition();
+      inputSpeechRecognition.lang = 'pt-BR';
+      inputSpeechRecognition.continuous = false;
+      inputSpeechRecognition.interimResults = true;
+
+      inputSpeechRecognition.onstart = () => {
+        inputEl.placeholder = "Ouvindo sua voz...";
+      };
+
+      inputSpeechRecognition.onresult = (event) => {
+        let transcript = '';
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          transcript += event.results[i][0].transcript;
+        }
+        inputEl.value = transcript;
+        if (inputId === 'field-process-object') runOfflineAIAnalysis();
+      };
+
+      inputSpeechRecognition.onend = () => {
+        inputSpeechRecognition = null;
+      };
+
+      inputSpeechRecognition.start();
+    }
+
+    // 5. NAVEGAÇÃO ENTRE TABS
     function switchTab(tabId) {
       document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
       const activeTab = document.getElementById(`tab-${tabId}`);
       if (activeTab) activeTab.classList.remove('hidden');
 
+      // Botoes Mobile
       document.querySelectorAll('.nav-btn').forEach(btn => {
-        btn.classList.remove('text-brand-400');
+        btn.classList.remove('text-cyan-400');
         btn.classList.add('text-slate-400');
       });
-
       const currentNav = document.getElementById(`nav-${tabId}`);
       if (currentNav) {
         currentNav.classList.remove('text-slate-400');
-        currentNav.classList.add('text-brand-400');
+        currentNav.classList.add('text-cyan-400');
+      }
+
+      // Botoes Desktop
+      document.querySelectorAll('.dnav-btn').forEach(btn => {
+        btn.classList.remove('text-cyan-400', 'bg-cyan-500/10');
+        btn.classList.add('text-slate-400');
+      });
+      const currentDNav = document.getElementById(`dtab-${tabId}`);
+      if (currentDNav) {
+        currentDNav.classList.remove('text-slate-400');
+        currentDNav.classList.add('text-cyan-400', 'bg-cyan-500/10');
+      }
+    }
+
+    // 6. OCULTAR CAMPOS FINANCEIROS PARA POSSÍVEL CLIENTE
+    function toggleFormFinancialFields() {
+      const status = document.getElementById('field-case-status').value;
+      const finBlock = document.getElementById('financial-form-block');
+      if (status === 'Possivel') {
+        finBlock.classList.add('hidden');
+      } else {
+        finBlock.classList.remove('hidden');
+      }
+    }
+
+    // 7. CHAVE RÁPIDA DE TOGGLE "PRONTO" NO CARD
+    function toggleCaseReadyState(caseId) {
+      const itemIdx = cases.findIndex(c => c.id === caseId);
+      if (itemIdx >= 0) {
+        cases[itemIdx].processReady = !cases[itemIdx].processReady;
+        localStorage.setItem('jusflow_cases_db', JSON.stringify(cases));
+        syncWithGoogleSheets(cases[itemIdx]);
+        renderAll();
       }
     }
 
@@ -524,18 +820,21 @@
           document.getElementById('field-process-object').value = item.processObject;
           document.getElementById('field-case-area').value = item.caseArea;
           document.getElementById('field-case-status').value = item.caseStatus;
-          document.getElementById('field-fee-type').value = item.feeType;
-          document.getElementById('field-fee-value').value = item.feeValue;
+          document.getElementById('field-process-ready').checked = !!item.processReady;
+          document.getElementById('field-fee-type').value = item.feeType || 'Fixo';
+          document.getElementById('field-fee-value').value = item.feeValue || 0;
           document.getElementById('field-advance-amount').value = item.advanceAmount || 0;
-          document.getElementById('field-financial-status').value = item.financialStatus;
+          document.getElementById('field-financial-status').value = item.financialStatus || 'Em Processo';
           document.getElementById('field-junior-commission').checked = !!item.juniorCommission;
           document.getElementById('field-notes').value = item.notes || '';
+          toggleFormFinancialFields();
           runOfflineAIAnalysis();
         }
       } else {
         document.getElementById('modal-title').innerText = 'Novo Caso Advocatício';
         document.getElementById('field-id').value = '';
         document.getElementById('ai-insight-box').classList.add('hidden');
+        toggleFormFinancialFields();
       }
 
       modal.classList.remove('hidden');
@@ -543,76 +842,9 @@
 
     function closeModal() {
       document.getElementById('modal-case').classList.add('hidden');
-      if (isRecording) stopVoiceRecognition();
     }
 
-    function initSpeechRecognition() {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (!SpeechRecognition) return;
-
-      recognition = new SpeechRecognition();
-      recognition.lang = 'pt-BR';
-      recognition.continuous = false;
-      recognition.interimResults = false;
-
-      recognition.onstart = () => {
-        isRecording = true;
-        document.getElementById('btn-mic-record').classList.add('mic-recording');
-        document.getElementById('voice-status-text').innerText = 'Ouvindo... Fale o nome, processo e valores.';
-      };
-
-      recognition.onresult = (event) => {
-        const transcript = event.results[0][0].transcript;
-        document.getElementById('voice-status-text').innerText = `Entendido: "${transcript}"`;
-        parseVoiceTranscript(transcript);
-        stopVoiceRecognition();
-      };
-
-      recognition.onerror = () => stopVoiceRecognition();
-      recognition.onend = () => stopVoiceRecognition();
-    }
-
-    function toggleVoiceRecognition() {
-      if (!recognition) return;
-      isRecording ? stopVoiceRecognition() : recognition.start();
-    }
-
-    function stopVoiceRecognition() {
-      if (recognition && isRecording) recognition.stop();
-      isRecording = false;
-      const btn = document.getElementById('btn-mic-record');
-      if (btn) btn.classList.remove('mic-recording');
-    }
-
-    function parseVoiceTranscript(text) {
-      const lower = text.toLowerCase();
-      const numbers = text.match(/\d+/g);
-      if (numbers && numbers.length > 0) {
-        document.getElementById('field-fee-value').value = numbers[0];
-        if (numbers.length > 1) document.getElementById('field-advance-amount').value = numbers[1];
-      }
-
-      if (lower.includes('bpc') || lower.includes('loas')) {
-        document.getElementById('field-process-object').value = 'BPC/LOAS Benefício Assistencial';
-        document.getElementById('field-case-area').value = 'Previdenciário';
-      } else if (lower.includes('gestante') || lower.includes('maternidade')) {
-        document.getElementById('field-process-object').value = 'Auxílio-Maternidade / Gestante';
-        document.getElementById('field-case-area').value = 'Previdenciário';
-      } else if (lower.includes('aposentadoria')) {
-        document.getElementById('field-process-object').value = 'Aposentadoria por Idade/Tempo';
-        document.getElementById('field-case-area').value = 'Previdenciário';
-      } else {
-        document.getElementById('field-client-name').value = text.split(' ')[0] + ' ' + (text.split(' ')[1] || '');
-        document.getElementById('field-process-object').value = text;
-      }
-
-      if (lower.includes('junior') || lower.includes('júnior')) {
-        document.getElementById('field-junior-commission').checked = true;
-      }
-
-      runOfflineAIAnalysis();
-    }
-
+    // 8. MOTOR DE IA LOCAL (SIMILARIDADE)
     function tokenize(text) {
       return text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").split(/\W+/).filter(w => w.length > 2);
     }
@@ -643,7 +875,7 @@
       })).filter(m => m.score > 0.12).sort((a, b) => b.score - a.score);
 
       if (matches.length === 0) {
-        aiText.innerHTML = `⚠️ <em>Primeiro registro para este tipo de objeto na planilha.</em>`;
+        aiText.innerHTML = `⚠️ <em>Primeiro registro para este tipo de objeto no banco de dados.</em>`;
         return;
       }
 
@@ -652,30 +884,33 @@
       const avgFee = Math.round(matches.reduce((acc, m) => acc + (parseFloat(m.item.feeValue) || 0), 0) / matches.length);
 
       aiText.innerHTML = `
-        Análise de <strong>${matches.length} caso(s) semelhante(s)</strong>:<br>
+        Encontrados <strong>${matches.length} caso(s) semelhante(s)</strong> no histórico:<br>
         • Êxito Histórico: <strong class="text-emerald-400">${winRate}%</strong> de vitórias/acordos.<br>
-        • Média de Honorários: <strong class="text-brand-400">R$ ${avgFee.toLocaleString('pt-BR')}</strong>.<br>
-        • Recomenda: ${winRate >= 50 ? '<strong>Alta viabilidade.</strong> Sugerido fechar contrato.' : '<strong>Requer cuidado com documentos.</strong>'}
+        • Média de Honorários: <strong class="text-cyan-400">R$ ${avgFee.toLocaleString('pt-BR')}</strong>.<br>
+        • Recomendação: ${winRate >= 50 ? '<strong>Alta viabilidade.</strong> Sugerido fechar contrato.' : '<strong>Requer cuidado com documentos.</strong>'}
       `;
     }
 
+    // 9. SALVAR CASO
     function saveCase(e) {
       e.preventDefault();
 
       const id = document.getElementById('field-id').value || 'case_' + Date.now();
       const today = new Date();
+      const status = document.getElementById('field-case-status').value;
 
       const caseData = {
         id: id,
         clientName: document.getElementById('field-client-name').value.trim(),
         processObject: document.getElementById('field-process-object').value.trim(),
         caseArea: document.getElementById('field-case-area').value,
-        caseStatus: document.getElementById('field-case-status').value,
-        feeType: document.getElementById('field-fee-type').value,
-        feeValue: parseFloat(document.getElementById('field-fee-value').value) || 0,
-        advanceAmount: parseFloat(document.getElementById('field-advance-amount').value) || 0,
-        financialStatus: document.getElementById('field-financial-status').value,
-        juniorCommission: document.getElementById('field-junior-commission').checked,
+        caseStatus: status,
+        processReady: document.getElementById('field-process-ready').checked,
+        feeType: status === 'Possivel' ? 'Fixo' : document.getElementById('field-fee-type').value,
+        feeValue: status === 'Possivel' ? 0 : parseFloat(document.getElementById('field-fee-value').value) || 0,
+        advanceAmount: status === 'Possivel' ? 0 : parseFloat(document.getElementById('field-advance-amount').value) || 0,
+        financialStatus: status === 'Possivel' ? 'Em Processo' : document.getElementById('field-financial-status').value,
+        juniorCommission: status === 'Possivel' ? false : document.getElementById('field-junior-commission').checked,
         notes: document.getElementById('field-notes').value.trim(),
         year: today.getFullYear().toString(),
         month: (today.getMonth() + 1).toString().padStart(2, '0'),
@@ -690,8 +925,6 @@
       }
 
       localStorage.setItem('jusflow_cases_db', JSON.stringify(cases));
-      
-      // ESCRITA NA PLANILHA EM TEMPO REAL
       syncWithGoogleSheets(caseData);
 
       closeModal();
@@ -706,15 +939,16 @@
       }
     }
 
+    // 10. RENDERIZAÇÃO GERAL E CARDS
     function renderAll() {
       const currentYear = new Date().getFullYear().toString();
       const currentMonth = (new Date().getMonth() + 1).toString().padStart(2, '0');
 
-      const totalRevenue = cases.reduce((acc, c) => acc + (c.feeType !== 'Porcentagem' ? c.feeValue : 0), 0);
-      const yearRevenue = cases.filter(c => c.year === currentYear).reduce((acc, c) => acc + (c.feeType !== 'Porcentagem' ? c.feeValue : 0), 0);
-      const monthRevenue = cases.filter(c => c.year === currentYear && c.month === currentMonth).reduce((acc, c) => acc + (c.feeType !== 'Porcentagem' ? c.feeValue : 0), 0);
-      const totalAdvance = cases.reduce((acc, c) => acc + (c.advanceAmount || 0), 0);
-      const juniorCommissionTotal = cases.filter(c => c.juniorCommission).reduce((acc, c) => acc + (c.feeType !== 'Porcentagem' ? (c.feeValue * 0.5) : 0), 0);
+      const totalRevenue = cases.reduce((acc, c) => acc + (c.feeType !== 'Porcentagem' ? (parseFloat(c.feeValue) || 0) : 0), 0);
+      const yearRevenue = cases.filter(c => c.year === currentYear).reduce((acc, c) => acc + (c.feeType !== 'Porcentagem' ? (parseFloat(c.feeValue) || 0) : 0), 0);
+      const monthRevenue = cases.filter(c => c.year === currentYear && c.month === currentMonth).reduce((acc, c) => acc + (c.feeType !== 'Porcentagem' ? (parseFloat(c.feeValue) || 0) : 0), 0);
+      const totalAdvance = cases.reduce((acc, c) => acc + (parseFloat(c.advanceAmount) || 0), 0);
+      const juniorCommissionTotal = cases.filter(c => c.juniorCommission).reduce((acc, c) => acc + (c.feeType !== 'Porcentagem' ? ((parseFloat(c.feeValue) || 0) * 0.5) : 0), 0);
       const netProfit = totalRevenue - juniorCommissionTotal;
 
       const countActive = cases.filter(c => c.caseStatus === 'Ativo').length;
@@ -744,46 +978,61 @@
 
     function buildCaseCard(item) {
       const statusBadges = {
-        'Ativo': 'bg-brand-500/10 text-brand-400 border-brand-500/20',
+        'Ativo': 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20',
         'Pendente': 'bg-amber-500/10 text-amber-400 border-amber-500/20',
         'Possivel': 'bg-sky-500/10 text-sky-400 border-sky-500/20',
         'Encerrado': 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
       };
 
       const juniorVal = item.juniorCommission && item.feeType !== 'Porcentagem' ? (item.feeValue * 0.5) : 0;
+      const isLead = item.caseStatus === 'Possivel';
 
       return `
-        <div class="glass-card rounded-2xl p-4 space-y-2.5 shadow-lg relative">
+        <div class="glass-card glass-card-interactive rounded-2xl p-4 space-y-3 relative">
           <div class="flex justify-between items-start">
             <div>
-              <h4 class="font-bold text-slate-100 text-sm leading-tight">${item.clientName}</h4>
-              <span class="inline-block text-[11px] font-semibold text-ai-400 mt-0.5">📌 ${item.processObject}</span>
+              <h4 class="font-black text-white text-sm tracking-tight leading-tight">${item.clientName}</h4>
+              <span class="inline-block text-[11px] font-bold text-neon-400 mt-1">📌 ${item.processObject}</span>
             </div>
-            <span class="text-[9px] px-2.5 py-0.5 rounded-full border font-bold ${statusBadges[item.caseStatus] || 'bg-slate-800 text-slate-300'}">
-              ${item.caseStatus}
-            </span>
+            <div class="flex flex-col items-end space-y-1">
+              <span class="text-[9px] px-2.5 py-0.5 rounded-full border font-black tracking-wider ${statusBadges[item.caseStatus] || 'bg-slate-800 text-slate-300'}">
+                ${item.caseStatus}
+              </span>
+
+              <!-- BOTAO TOGGLE PRONTO -->
+              <button onclick="toggleCaseReadyState('${item.id}')" title="Clique para alterar status de prontidão" class="text-[9px] font-extrabold px-2 py-0.5 rounded-md border flex items-center space-x-1 ${item.processReady ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-slate-800 text-slate-400 border-slate-700'}">
+                <span>${item.processReady ? 'PRONTO' : 'EM ANDAMENTO'}</span>
+              </button>
+            </div>
           </div>
 
-          <div class="grid grid-cols-2 gap-2 text-xs bg-slate-950/80 p-2.5 rounded-xl border border-slate-800/80">
-            <div>
-              <span class="text-slate-500 text-[9px] block">Área / Honorários</span>
-              <span class="font-semibold text-slate-200">${item.caseArea} (${item.feeType === 'Porcentagem' ? item.feeValue + '%' : 'R$ ' + item.feeValue})</span>
+          ${!isLead ? `
+            <div class="grid grid-cols-2 gap-2 text-xs bg-slate-950/80 p-2.5 rounded-xl border border-slate-800/80">
+              <div>
+                <span class="text-slate-500 text-[9px] font-bold block uppercase">Área / Honorários</span>
+                <span class="font-bold text-slate-200">${item.caseArea} (${item.feeType === 'Porcentagem' ? item.feeValue + '%' : 'R$ ' + (parseFloat(item.feeValue)||0).toLocaleString('pt-BR')})</span>
+              </div>
+              <div>
+                <span class="text-slate-500 text-[9px] font-bold block uppercase">Entrada Caixa</span>
+                <span class="font-extrabold text-amber-400">R$ ${(parseFloat(item.advanceAmount) || 0).toLocaleString('pt-BR', {minimumFractionDigits: 2})}</span>
+              </div>
+              <div>
+                <span class="text-slate-500 text-[9px] font-bold block uppercase">Situação Financeira</span>
+                <span class="font-bold text-cyan-400">${item.financialStatus}</span>
+              </div>
+              <div>
+                <span class="text-slate-500 text-[9px] font-bold block uppercase">Comissão Jr (50%)</span>
+                <span class="font-bold ${item.juniorCommission ? 'text-neon-400' : 'text-slate-600'}">
+                  ${item.juniorCommission ? `SIM (R$ ${juniorVal.toLocaleString('pt-BR', {minimumFractionDigits: 2})})` : 'NÃO'}
+                </span>
+              </div>
             </div>
-            <div>
-              <span class="text-slate-500 text-[9px] block">Entrada em Dinheiro</span>
-              <span class="font-bold text-amber-400">R$ ${(item.advanceAmount || 0).toLocaleString('pt-BR', {minimumFractionDigits: 2})}</span>
+          ` : `
+            <div class="text-xs bg-slate-950/80 p-2.5 rounded-xl border border-slate-800/80">
+              <span class="text-slate-500 text-[9px] font-bold block uppercase">Área da Proposta</span>
+              <span class="font-bold text-slate-200">${item.caseArea}</span>
             </div>
-            <div>
-              <span class="text-slate-500 text-[9px] block">Situação Financeira</span>
-              <span class="font-semibold text-brand-400">${item.financialStatus}</span>
-            </div>
-            <div>
-              <span class="text-slate-500 text-[9px] block">Comissão Júnior (50%)</span>
-              <span class="font-semibold ${item.juniorCommission ? 'text-ai-400' : 'text-slate-600'}">
-                ${item.juniorCommission ? `SIM (R$ ${juniorVal.toLocaleString('pt-BR', {minimumFractionDigits: 2})})` : 'NÃO'}
-              </span>
-            </div>
-          </div>
+          `}
 
           ${item.notes ? `
             <div class="text-[10px] text-amber-300/90 bg-amber-500/10 border border-amber-500/20 p-2 rounded-xl">
@@ -791,13 +1040,13 @@
             </div>
           ` : ''}
 
-          <div class="flex justify-between items-center pt-1.5 border-t border-slate-800/80 text-[10px] text-slate-500">
-            <span>Data: ${item.dateStr}</span>
+          <div class="flex justify-between items-center pt-2 border-t border-slate-800/80 text-[10px] text-slate-500 font-medium">
+            <span>Data: ${item.dateStr || ''}</span>
             <div class="flex space-x-3">
-              <button onclick="openModal('${item.id}')" class="text-brand-400 hover:text-brand-300 font-semibold flex items-center space-x-1">
+              <button onclick="openModal('${item.id}')" class="text-cyan-400 hover:text-cyan-300 font-bold flex items-center space-x-1">
                 <i data-lucide="edit-2" class="w-3.5 h-3.5"></i><span>Editar</span>
               </button>
-              <button onclick="deleteCase('${item.id}')" class="text-rose-400 hover:text-rose-300 font-semibold flex items-center space-x-1">
+              <button onclick="deleteCase('${item.id}')" class="text-rose-400 hover:text-rose-300 font-bold flex items-center space-x-1">
                 <i data-lucide="trash-2" class="w-3.5 h-3.5"></i><span>Excluir</span>
               </button>
             </div>
@@ -824,26 +1073,26 @@
       document.getElementById('badge-total-filtered').innerText = filtered.length;
       document.getElementById('contracts-list').innerHTML = filtered.length 
         ? filtered.map(buildCaseCard).join('') 
-        : '<p class="text-xs text-slate-500 text-center py-6">Nenhum processo encontrado.</p>';
+        : '<p class="text-xs text-slate-500 text-center py-6 col-span-2">Nenhum processo encontrado.</p>';
       
       lucide.createIcons();
     }
 
     function renderLists() {
       document.getElementById('recent-list').innerHTML = cases.length 
-        ? cases.slice(0, 3).map(buildCaseCard).join('') 
-        : '<p class="text-xs text-slate-500 text-center py-4">Nenhum caso cadastrado na planilha ainda.</p>';
+        ? cases.slice(0, 4).map(buildCaseCard).join('') 
+        : '<p class="text-xs text-slate-500 text-center py-4 col-span-2">Nenhum caso cadastrado na planilha ainda.</p>';
 
       filterCases();
 
       const prospects = cases.filter(c => c.caseStatus === 'Possivel');
-      document.getElementById('prospects-list').innerHTML = prospects.length ? prospects.map(buildCaseCard).join('') : '<p class="text-xs text-slate-500 text-center py-4">Nenhum cliente em prospecção.</p>';
+      document.getElementById('prospects-list').innerHTML = prospects.length ? prospects.map(buildCaseCard).join('') : '<p class="text-xs text-slate-500 text-center py-4 col-span-2">Nenhum cliente em prospecção.</p>';
 
       const pending = cases.filter(c => c.caseStatus === 'Pendente');
-      document.getElementById('pending-list').innerHTML = pending.length ? pending.map(buildCaseCard).join('') : '<p class="text-xs text-slate-500 text-center py-4">Nenhuma pendência ativa!</p>';
+      document.getElementById('pending-list').innerHTML = pending.length ? pending.map(buildCaseCard).join('') : '<p class="text-xs text-slate-500 text-center py-4 col-span-2">Nenhuma pendência ativa!</p>';
 
       const closed = cases.filter(c => c.caseStatus === 'Encerrado');
-      document.getElementById('closed-list').innerHTML = closed.length ? closed.map(buildCaseCard).join('') : '<p class="text-xs text-slate-500 text-center py-4">Nenhum processo encerrado.</p>';
+      document.getElementById('closed-list').innerHTML = closed.length ? closed.map(buildCaseCard).join('') : '<p class="text-xs text-slate-500 text-center py-4 col-span-2">Nenhum processo encerrado.</p>';
     }
   </script>
 </body>

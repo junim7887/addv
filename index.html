@@ -1,998 +1,1099 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" class="dark">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Gestão Jurídica Inteligente</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>JusFlow - Gestão Jurídica Inteligente</title>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            slate: {
+              950: '#070a12',
+              900: '#0b0f19',
+              850: '#111726',
+              800: '#1a2236'
+            },
+            cyan: {
+              400: '#38bdf8',
+              500: '#00d2ff',
+              600: '#0284c7'
+            },
+            neon: {
+              400: '#c084fc',
+              500: '#a855f7',
+              600: '#9333ea'
+            }
+          },
+          fontFamily: {
+            sans: ['-apple-system', 'BlinkMacSystemFont', 'SF Pro Display', 'Inter', 'Segoe UI', 'Roboto', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+
   <style>
     :root {
-      --bg-primary: #090d16;
-      --bg-card: rgba(22, 30, 46, 0.75);
-      --bg-card-hover: rgba(30, 41, 64, 0.85);
-      --bg-input: rgba(15, 23, 42, 0.8);
-      --text-main: #f8fafc;
-      --text-sub: #94a3b8;
-      --accent: #38bdf8;
-      --accent-glow: rgba(56, 189, 248, 0.3);
-      --ai-purple: #a855f7;
-      --ai-glow: rgba(168, 85, 247, 0.3);
-      --success: #22c55e;
-      --warning: #f59e0b;
-      --danger: #ef4444;
-      --border: rgba(255, 255, 255, 0.1);
-      --glass: rgba(255, 255, 255, 0.03);
+      --sat: env(safe-area-inset-top, 20px);
+      --sab: env(safe-area-inset-bottom, 16px);
     }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
-      -webkit-tap-highlight-color: transparent;
-    }
-
     body {
-      background-color: var(--bg-primary);
-      background-image: 
-        radial-gradient(circle at 10% 10%, rgba(56, 189, 248, 0.08) 0%, transparent 40%),
-        radial-gradient(circle at 90% 90%, rgba(168, 85, 247, 0.08) 0%, transparent 40%);
-      color: var(--text-main);
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
-      padding-top: max(20px, env(safe-area-inset-top));
-      padding-bottom: max(85px, calc(70px + env(safe-area-inset-bottom)));
+      padding-top: var(--sat);
+      padding-bottom: calc(5rem + var(--sab));
+      background-color: #070a12;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+    @media (min-width: 768px) {
+      body { padding-bottom: 2rem; }
     }
 
-    header {
-      padding: 16px 20px;
-      background: rgba(15, 23, 42, 0.75);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
+    .safe-top-padding { padding-top: max(0.85rem, var(--sat)); }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-    .header-title-container {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .logo-icon {
-      font-size: 1.5rem;
-      background: linear-gradient(135deg, var(--accent), var(--ai-purple));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    header h1 {
-      font-size: 1.25rem;
-      font-weight: 700;
-      letter-spacing: -0.5px;
-    }
-
-    .header-actions {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .sync-status {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 0.75rem;
-      color: var(--text-sub);
-      background: var(--glass);
-      padding: 6px 12px;
-      border-radius: 20px;
-      border: 1px solid var(--border);
-    }
-
-    .status-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--success);
-      box-shadow: 0 0 8px var(--success);
-    }
-
-    .status-dot.syncing {
-      background: var(--warning);
-      box-shadow: 0 0 8px var(--warning);
-      animation: pulse 1s infinite alternate;
-    }
-
-    @keyframes pulse {
-      from { opacity: 0.4; }
-      to { opacity: 1; }
-    }
-
-    .btn-primary {
-      background: linear-gradient(135deg, #38bdf8, #0284c7);
-      color: #000;
-      border: none;
-      padding: 10px 18px;
-      border-radius: 14px;
-      font-weight: 700;
-      font-size: 0.85rem;
-      cursor: pointer;
-      box-shadow: 0 4px 15px var(--accent-glow);
-      transition: all 0.2s ease;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .container {
-      padding: 20px;
-      max-width: 1000px;
-      margin: 0 auto;
-      width: 100%;
-    }
-
-    .section { display: none; }
-    .section.active { display: block; animation: fadeIn 0.3s ease; }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(6px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .metrics-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-      gap: 12px;
-      margin-bottom: 24px;
-    }
-
-    .metric-card {
-      background: var(--bg-card);
-      backdrop-filter: blur(12px);
-      padding: 16px;
-      border-radius: 20px;
-      border: 1px solid var(--border);
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-    }
-
-    .metric-label {
-      font-size: 0.75rem;
-      color: var(--text-sub);
-      text-transform: uppercase;
-      font-weight: 600;
-      letter-spacing: 0.5px;
-    }
-
-    .metric-value {
-      font-size: 1.35rem;
-      font-weight: 800;
-      margin-top: 8px;
-      color: var(--text-main);
-    }
-
-    .search-filter-bar {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-bottom: 20px;
-      background: var(--bg-card);
-      padding: 12px;
-      border-radius: 16px;
-      border: 1px solid var(--border);
-    }
-
-    .search-input-wrap {
-      flex: 1;
-      min-width: 200px;
-      position: relative;
-    }
-
-    .search-input-wrap input {
-      width: 100%;
-      padding: 10px 14px 10px 36px;
-      background: var(--bg-input);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      color: var(--text-main);
-      font-size: 0.9rem;
-      outline: none;
-    }
-
-    .search-icon {
-      position: absolute;
-      left: 12px;
-      top: 50%;
-      transform: translateY(-50%);
-      color: var(--text-sub);
-    }
-
-    .filter-select {
-      background: var(--bg-input);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      color: var(--text-main);
-      padding: 10px 12px;
-      font-size: 0.85rem;
-      outline: none;
-    }
-
-    .cards-list {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-      gap: 14px;
-    }
-
-    .card-process {
-      background: var(--bg-card);
-      backdrop-filter: blur(10px);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 18px;
-      position: relative;
-      transition: all 0.25s ease;
-    }
-
-    .card-process:hover {
-      border-color: rgba(56, 189, 248, 0.4);
-      background: var(--bg-card-hover);
-    }
-
-    .card-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 10px;
-    }
-
-    .client-name {
-      font-size: 1.15rem;
-      font-weight: 700;
-      color: #fff;
-    }
-
-    .badge {
-      padding: 4px 10px;
-      border-radius: 20px;
-      font-size: 0.72rem;
-      font-weight: 700;
-      letter-spacing: 0.3px;
-      text-transform: uppercase;
-    }
-
-    .badge-ativo { background: rgba(56, 189, 248, 0.15); color: var(--accent); border: 1px solid rgba(56, 189, 248, 0.3); }
-    .badge-pendente { background: rgba(245, 158, 11, 0.15); color: var(--warning); border: 1px solid rgba(245, 158, 11, 0.3); }
-    .badge-possivel { background: rgba(148, 163, 184, 0.15); color: var(--text-sub); border: 1px solid rgba(148, 163, 184, 0.3); }
-    .badge-encerrado { background: rgba(34, 197, 94, 0.15); color: var(--success); border: 1px solid rgba(34, 197, 94, 0.3); }
-
-    .tag-objeto {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      background: rgba(168, 85, 247, 0.15);
-      border: 1px solid rgba(168, 85, 247, 0.3);
-      padding: 4px 10px;
-      border-radius: 8px;
-      font-size: 0.8rem;
-      color: var(--ai-purple);
-      margin-top: 6px;
-      font-weight: 600;
-    }
-
-    .badge-pronto {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      padding: 3px 8px;
-      border-radius: 6px;
-      font-size: 0.75rem;
-      font-weight: 700;
-      margin-top: 6px;
-      margin-left: 6px;
-    }
-    .pronto-sim { background: rgba(34, 197, 94, 0.2); color: var(--success); }
-    .pronto-nao { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
-
-    .process-info-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 8px;
-      margin-top: 14px;
-      padding-top: 12px;
-      border-top: 1px solid rgba(255, 255, 255, 0.05);
-      font-size: 0.82rem;
-      color: var(--text-sub);
-    }
-
-    .process-info-grid span { display: block; }
-    .val-highlight { color: var(--text-main); font-weight: 600; }
-
-    /* Aba de Controle por Voz */
-    .voice-control-panel {
-      background: var(--bg-card);
-      border: 1px solid var(--ai-purple);
-      border-radius: 24px;
-      padding: 30px 20px;
-      text-align: center;
-      box-shadow: 0 0 30px rgba(168, 85, 247, 0.15);
-      margin-bottom: 24px;
-    }
-
-    .mic-btn-large {
-      width: 90px;
-      height: 90px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, var(--ai-purple), #7c3aed);
-      border: none;
-      color: #fff;
-      font-size: 2.5rem;
-      cursor: pointer;
-      margin: 20px auto;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 0 25px var(--ai-glow);
-      transition: all 0.3s ease;
-    }
-
-    .mic-btn-large.listening {
-      animation: micPulse 1.2s infinite alternate;
-      background: linear-gradient(135deg, var(--danger), #dc2626);
-    }
-
-    @keyframes micPulse {
-      from { transform: scale(1); box-shadow: 0 0 15px rgba(239, 68, 68, 0.4); }
-      to { transform: scale(1.1); box-shadow: 0 0 35px rgba(239, 68, 68, 0.8); }
-    }
-
-    .voice-transcript {
-      font-size: 1.1rem;
-      font-style: italic;
-      color: var(--accent);
-      min-height: 40px;
-      margin-top: 10px;
-    }
-
-    nav.bottom-bar {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: rgba(15, 23, 42, 0.9);
+    /* Efeitos de Vidro (Glassmorphism) */
+    .glass-card {
+      background: rgba(17, 23, 38, 0.7);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
-      border-top: 1px solid var(--border);
-      display: flex;
-      justify-content: space-around;
-      padding-top: 8px;
-      padding-bottom: max(10px, env(safe-area-inset-bottom));
-      z-index: 1000;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    }
+    .glass-card-interactive {
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .glass-card-interactive:hover {
+      border-color: rgba(0, 210, 255, 0.3);
+      transform: translateY(-2px);
+      box-shadow: 0 12px 40px -10px rgba(0, 210, 255, 0.2);
+    }
+    .glass-nav {
+      background: rgba(11, 15, 25, 0.88);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
     }
 
-    .nav-item {
-      background: none;
-      border: none;
-      color: var(--text-sub);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      font-size: 0.68rem;
-      font-weight: 500;
-      cursor: pointer;
-      width: 14%;
-      transition: all 0.2s ease;
+    /* Ondas do Microfone */
+    @keyframes pulseRing {
+      0% { transform: scale(0.95); opacity: 0.8; }
+      50% { transform: scale(1.15); opacity: 0.4; }
+      100% { transform: scale(0.95); opacity: 0.8; }
+    }
+    .mic-active-ring {
+      animation: pulseRing 1.2s infinite ease-in-out;
     }
 
-    .nav-item.active {
-      color: var(--accent);
-      font-weight: 700;
+    /* Modal Animation */
+    .slide-up {
+      animation: slideUpModal 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     }
-
-    .nav-icon {
-      font-size: 1.3rem;
-      margin-bottom: 3px;
-    }
-
-    .modal {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.8);
-      backdrop-filter: blur(8px);
-      z-index: 2000;
-      justify-content: center;
-      align-items: flex-end;
-    }
-
-    .modal.active { display: flex; }
-
-    .modal-content {
-      background: #0f172a;
-      width: 100%;
-      max-width: 650px;
-      border-radius: 28px 28px 0 0;
-      padding: 24px;
-      max-height: 90vh;
-      overflow-y: auto;
-      border-top: 1px solid var(--border);
-    }
-
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-    }
-
-    .form-group {
-      margin-bottom: 16px;
-    }
-
-    .form-group label {
-      display: block;
-      font-size: 0.85rem;
-      color: var(--text-sub);
-      margin-bottom: 6px;
-      font-weight: 600;
-    }
-
-    .form-group input, .form-group select, .form-group textarea {
-      width: 100%;
-      padding: 12px 14px;
-      background: var(--bg-input);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      color: var(--text-main);
-      font-size: 0.95rem;
-      outline: none;
-    }
-
-    .toggle-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background: var(--bg-input);
-      padding: 12px 16px;
-      border-radius: 14px;
-      border: 1px solid var(--border);
-      margin-bottom: 12px;
-    }
-
-    .btn-submit {
-      width: 100%;
-      padding: 14px;
-      background: linear-gradient(135deg, var(--accent), #0284c7);
-      color: #000;
-      border: none;
-      border-radius: 14px;
-      font-weight: 700;
-      font-size: 1rem;
-      cursor: pointer;
-      margin-top: 12px;
-      box-shadow: 0 4px 15px var(--accent-glow);
-    }
-
-    @media (min-width: 768px) {
-      body { padding-bottom: 30px; }
-      nav.bottom-bar {
-        position: relative;
-        border-top: none;
-        border-bottom: 1px solid var(--border);
-        margin-bottom: 20px;
-        background: rgba(15, 23, 42, 0.5);
-      }
-      .nav-item {
-        flex-direction: row;
-        gap: 8px;
-        font-size: 0.9rem;
-        width: auto;
-        padding: 8px 16px;
-        border-radius: 12px;
-      }
-      .nav-item.active {
-        background: var(--glass);
-        border: 1px solid var(--border);
-      }
-      .modal { align-items: center; }
-      .modal-content { border-radius: 28px; }
+    @keyframes slideUpModal {
+      from { transform: translateY(100%); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
     }
   </style>
 </head>
-<body>
+<body class="text-slate-100 antialiased min-h-screen flex flex-col justify-between selection:bg-cyan-500 selection:text-slate-950">
 
-  <header>
-    <div class="header-title-container">
-      <span class="logo-icon">⚖️</span>
-      <h1>Gestão Jurídica</h1>
-    </div>
-    <div class="header-actions">
-      <div class="sync-status">
-        <span class="status-dot" id="syncDot"></span>
-        <span id="syncText">Sincronizado</span>
+  <!-- HEADER NATIVO / DYNAMIC ISLAND COMPATÍVEL -->
+  <header class="glass-card sticky top-0 z-40 safe-top-padding px-4 py-3.5 border-b border-white/10 shadow-2xl">
+    <div class="max-w-6xl mx-auto flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="p-2.5 bg-gradient-to-br from-cyan-400 via-cyan-500 to-neon-500 rounded-2xl text-slate-950 shadow-lg shadow-cyan-500/25">
+          <i data-lucide="scale" class="w-5 h-5 text-slate-950 stroke-[2.5]"></i>
+        </div>
+        <div>
+          <div class="flex items-center space-x-2">
+            <h1 class="text-base font-black tracking-tight text-white">JusFlow</h1>
+            <span class="text-[9px] font-extrabold px-1.5 py-0.5 bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 rounded-md tracking-wider">PRO 2026</span>
+          </div>
+          <p id="sync-status" class="text-[10px] text-slate-400 font-medium flex items-center space-x-1.5 mt-0.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block animate-pulse"></span>
+            <span id="sync-status-text">Sincronizado com Google Planilha</span>
+          </p>
+        </div>
       </div>
-      <button class="btn-primary" onclick="openModal()">+ Novo Caso</button>
+
+      <div class="flex items-center space-x-2">
+        <button onclick="fetchCasesFromSheet()" title="Atualizar dados da planilha" class="p-2.5 bg-slate-800/80 hover:bg-slate-700 text-slate-300 rounded-xl active:scale-95 transition-all border border-white/5">
+          <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+        </button>
+        <button onclick="openModal()" class="bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-400 hover:to-cyan-500 text-slate-950 font-black px-3.5 py-2.5 rounded-xl text-xs flex items-center space-x-1.5 shadow-lg shadow-cyan-500/20 active:scale-95 transition-all">
+          <i data-lucide="plus-circle" class="w-4 h-4 stroke-[2.5]"></i>
+          <span class="hidden sm:inline">Novo Processo</span>
+          <span class="sm:hidden">Novo</span>
+        </button>
+      </div>
     </div>
   </header>
 
-  <div class="container">
+  <!-- CONTEÚDO PRINCIPAL -->
+  <main class="flex-1 max-w-6xl w-full mx-auto px-4 py-5 space-y-6">
 
-    <nav class="bottom-bar">
-      <button class="nav-item active" onclick="switchTab('inicio', this)">
-        <span class="nav-icon">📊</span>
-        <span>Início</span>
-      </button>
-      <button class="nav-item" onclick="switchTab('voz', this)">
-        <span class="nav-icon">🎙️</span>
-        <span>Voz</span>
-      </button>
-      <button class="nav-item" onclick="switchTab('contratos', this)">
-        <span class="nav-icon">📂</span>
-        <span>Contratos</span>
-      </button>
-      <button class="nav-item" onclick="switchTab('financeiro', this)">
-        <span class="nav-icon">💰</span>
-        <span>Financeiro</span>
-      </button>
-      <button class="nav-item" onclick="switchTab('pendentes', this)">
-        <span class="nav-icon">⚠️</span>
-        <span>Pendentes</span>
-      </button>
-      <button class="nav-item" onclick="switchTab('possiveis', this)">
-        <span class="nav-icon">🎯</span>
-        <span>Possíveis</span>
-      </button>
-      <button class="nav-item" onclick="switchTab('encerrados', this)">
-        <span class="nav-icon">✅</span>
-        <span>Encerrados</span>
-      </button>
-    </nav>
-
-    <!-- ABA INÍCIO -->
-    <div id="sec-inicio" class="section active">
-      <div class="metrics-grid">
-        <div class="metric-card">
-          <span class="metric-label">Fat. Mês Atual</span>
-          <div class="metric-value" id="m-fat-mes">R$ 0</div>
-        </div>
-        <div class="metric-card">
-          <span class="metric-label">Fat. Ano Atual</span>
-          <div class="metric-value" id="m-fat-ano">R$ 0</div>
-        </div>
-        <div class="metric-card">
-          <span class="metric-label">Entradas Recebidas</span>
-          <div class="metric-value" id="m-total-entradas" style="color: var(--success);">R$ 0</div>
-        </div>
-        <div class="metric-card">
-          <span class="metric-label">Lucro Estimado</span>
-          <div class="metric-value" id="m-lucro">R$ 0</div>
-        </div>
-        <div class="metric-card">
-          <span class="metric-label">Comissão Júnior (50%)</span>
-          <div class="metric-value" id="m-jr" style="color: var(--warning);">R$ 0</div>
-        </div>
-        <div class="metric-card">
-          <span class="metric-label">Em Processo</span>
-          <div class="metric-value" id="m-qtd-ativo">0</div>
-        </div>
+    <!-- NAVEGAÇÃO DESKTOP / MENSAGEM -->
+    <div class="hidden md:flex items-center justify-between glass-card p-2 rounded-2xl border border-white/10">
+      <div class="flex space-x-1">
+        <button onclick="switchTab('inicio')" id="dtab-inicio" class="dnav-btn px-4 py-2 rounded-xl text-xs font-bold transition-all text-cyan-400 bg-cyan-500/10">Início</button>
+        <button onclick="switchTab('voz')" id="dtab-voz" class="dnav-btn px-4 py-2 rounded-xl text-xs font-bold transition-all text-slate-400 hover:text-white">🎙️ Busca & Ditado</button>
+        <button onclick="switchTab('contratos')" id="dtab-contratos" class="dnav-btn px-4 py-2 rounded-xl text-xs font-bold transition-all text-slate-400 hover:text-white">Processos</button>
+        <button onclick="switchTab('possiveis')" id="dtab-possiveis" class="dnav-btn px-4 py-2 rounded-xl text-xs font-bold transition-all text-slate-400 hover:text-white">Possíveis (Leads)</button>
+        <button onclick="switchTab('pendentes')" id="dtab-pendentes" class="dnav-btn px-4 py-2 rounded-xl text-xs font-bold transition-all text-slate-400 hover:text-white">Pendentes</button>
+        <button onclick="switchTab('encerrados')" id="dtab-encerrados" class="dnav-btn px-4 py-2 rounded-xl text-xs font-bold transition-all text-slate-400 hover:text-white">Encerrados</button>
       </div>
-
-      <div class="search-filter-bar">
-        <div class="search-input-wrap">
-          <span class="search-icon">🔍</span>
-          <input type="text" id="globalSearch" placeholder="Procurar cliente, BPC/LOAS, Gestante..." oninput="render()">
-        </div>
-        <select class="filter-select" id="filterAno" onchange="render()">
-          <option value="">Todos os Anos</option>
-          <option value="2026">2026</option>
-          <option value="2025">2025</option>
-        </select>
-        <select class="filter-select" id="filterArea" onchange="render()">
-          <option value="">Todas as Áreas</option>
-          <option value="Previdenciário">Previdenciário</option>
-          <option value="Trabalhista">Trabalhista</option>
-          <option value="Cível">Cível</option>
-          <option value="Família">Família</option>
-        </select>
-      </div>
-
-      <h3 style="margin-bottom: 14px;">Processos Recentes</h3>
-      <div class="cards-list" id="lista-inicio"></div>
+      <span class="text-xs text-slate-400 pr-3 font-medium"><i data-lucide="zap" class="w-3.5 h-3.5 text-cyan-400 inline mr-1"></i>IA & Sincronização Ativas</span>
     </div>
 
-    <!-- ABA COMANDO DE VOZ -->
-    <div id="sec-voz" class="section">
-      <div class="voice-control-panel">
-        <h2>Pesquisa Jurídica por Voz</h2>
-        <p style="color: var(--text-sub); margin-top: 6px; font-size: 0.9rem;">
-          Pressione o botão e fale o nome do cliente ou a categoria (Ex: <em>"João"</em>, <em>"LOAS"</em>, <em>"Gestante"</em>, <em>"Trabalhista"</em>).
+    <!-- TAB 1: INÍCIO / DASHBOARD -->
+    <div id="tab-inicio" class="tab-content space-y-5">
+
+      <!-- DASHBOARD CARDS -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3.5">
+        <div class="glass-card p-4 rounded-2xl border-l-4 border-emerald-400 relative overflow-hidden">
+          <div class="flex justify-between items-center text-slate-400 mb-1">
+            <span class="text-[11px] font-bold uppercase tracking-wider">Fat. Mês Atual</span>
+            <i data-lucide="trending-up" class="w-4 h-4 text-emerald-400"></i>
+          </div>
+          <span id="dash-month-revenue" class="text-lg md:text-xl font-black text-emerald-400 block tracking-tight">R$ 0,00</span>
+          <span class="text-[10px] text-slate-400 font-medium mt-0.5 block">Honorários vigentes</span>
+        </div>
+
+        <div class="glass-card p-4 rounded-2xl border-l-4 border-cyan-400 relative overflow-hidden">
+          <div class="flex justify-between items-center text-slate-400 mb-1">
+            <span class="text-[11px] font-bold uppercase tracking-wider">Fat. Ano 2026</span>
+            <i data-lucide="calendar" class="w-4 h-4 text-cyan-400"></i>
+          </div>
+          <span id="dash-year-revenue" class="text-lg md:text-xl font-black text-cyan-400 block tracking-tight">R$ 0,00</span>
+          <span class="text-[10px] text-slate-400 font-medium mt-0.5 block">Acumulado anual</span>
+        </div>
+
+        <div class="glass-card p-4 rounded-2xl border-l-4 border-amber-400 relative overflow-hidden">
+          <div class="flex justify-between items-center text-slate-400 mb-1">
+            <span class="text-[11px] font-bold uppercase tracking-wider">Entradas Caixa</span>
+            <i data-lucide="wallet" class="w-4 h-4 text-amber-400"></i>
+          </div>
+          <span id="dash-total-advance" class="text-lg md:text-xl font-black text-amber-400 block tracking-tight">R$ 0,00</span>
+          <span class="text-[10px] text-slate-400 font-medium mt-0.5 block">Em caixa imediato</span>
+        </div>
+
+        <div class="glass-card p-4 rounded-2xl border-l-4 border-neon-400 relative overflow-hidden">
+          <div class="flex justify-between items-center text-slate-400 mb-1">
+            <span class="text-[11px] font-bold uppercase tracking-wider">Lucro Líquido</span>
+            <i data-lucide="shield-check" class="w-4 h-4 text-neon-400"></i>
+          </div>
+          <span id="dash-net-profit" class="text-lg md:text-xl font-black text-white block tracking-tight">R$ 0,00</span>
+          <span class="text-[10px] text-neon-400 font-medium mt-0.5 block">Descontado Jr (50%)</span>
+        </div>
+      </div>
+
+      <!-- PAINEL REPASSE JÚNIOR -->
+      <div class="glass-card p-4 rounded-2xl flex items-center justify-between bg-gradient-to-r from-neon-950/40 via-slate-900 to-slate-900 border border-neon-500/20">
+        <div class="flex items-center space-x-3.5">
+          <div class="p-3 bg-neon-500/20 text-neon-400 rounded-xl border border-neon-500/30">
+            <i data-lucide="users" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <span class="text-xs text-slate-400 font-bold uppercase tracking-wider">Comissão Advogado Júnior (50%)</span>
+            <span id="dash-junior-commission" class="text-base md:text-lg font-black text-neon-400 block">R$ 0,00</span>
+          </div>
+        </div>
+        <div class="text-right">
+          <span class="text-[10px] text-slate-400 font-semibold block">Total de Honorários Bruto</span>
+          <span id="dash-total-revenue" class="text-xs md:text-sm font-extrabold text-slate-200">R$ 0,00</span>
+        </div>
+      </div>
+
+      <!-- CARDS DE STATUS -->
+      <div class="space-y-2.5">
+        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Métricas de Casos</h3>
+        <div class="grid grid-cols-4 gap-2.5">
+          <div onclick="switchTab('contratos')" class="glass-card p-3 rounded-2xl text-center cursor-pointer active:scale-95 transition-transform">
+            <span id="count-active" class="text-lg font-black text-cyan-400 block">0</span>
+            <span class="text-[10px] font-bold text-slate-400 block">Ativos</span>
+          </div>
+          <div onclick="switchTab('possiveis')" class="glass-card p-3 rounded-2xl text-center cursor-pointer active:scale-95 transition-transform">
+            <span id="count-prospects" class="text-lg font-black text-sky-400 block">0</span>
+            <span class="text-[10px] font-bold text-slate-400 block">Possíveis</span>
+          </div>
+          <div onclick="switchTab('pendentes')" class="glass-card p-3 rounded-2xl text-center cursor-pointer active:scale-95 transition-transform">
+            <span id="count-pending" class="text-lg font-black text-amber-400 block">0</span>
+            <span class="text-[10px] font-bold text-slate-400 block">Pendentes</span>
+          </div>
+          <div onclick="switchTab('encerrados')" class="glass-card p-3 rounded-2xl text-center cursor-pointer active:scale-95 transition-transform">
+            <span id="count-closed" class="text-lg font-black text-emerald-400 block">0</span>
+            <span class="text-[10px] font-bold text-slate-400 block">Encerrados</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ÚLTIMOS CASOS -->
+      <div class="space-y-3">
+        <div class="flex justify-between items-center">
+          <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Processos Recentes na Planilha</h3>
+          <button onclick="switchTab('contratos')" class="text-xs text-cyan-400 font-bold hover:underline">Ver Todos</button>
+        </div>
+        <div id="recent-list" class="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+          <!-- Renderizado via JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: COMANDO DE VOZ E BUSCA POR ÁUDIO -->
+    <div id="tab-voz" class="tab-content hidden space-y-5">
+      <div class="glass-card p-6 rounded-3xl text-center space-y-4 border border-cyan-500/30 relative overflow-hidden">
+        <div class="absolute -right-10 -top-10 w-32 h-32 bg-cyan-500/10 rounded-full blur-2xl pointer-events-none"></div>
+
+        <div class="inline-flex p-3 bg-cyan-500/10 rounded-2xl text-cyan-400 mb-1">
+          <i data-lucide="mic" class="w-8 h-8"></i>
+        </div>
+
+        <h2 class="text-lg font-black text-white">Assistente Jurídico por Voz</h2>
+        <p class="text-xs text-slate-300 max-w-md mx-auto leading-relaxed">
+          Toque no botão e diga o nome do cliente ou tipo de processo (ex: <strong class="text-cyan-400">"Buscar Maria"</strong>, <strong class="text-cyan-400">"BPC LOAS"</strong>, <strong class="text-cyan-400">"Gestante"</strong> ou <strong class="text-cyan-400">"Pendentes"</strong>).
         </p>
 
-        <button class="mic-btn-large" id="btnMicGlobal" onclick="toggleGlobalVoice()">🎙️</button>
-
-        <div class="voice-transcript" id="voiceResult">Aguardando comando de voz...</div>
-      </div>
-
-      <h3>Resultados Encontrados por Voz</h3>
-      <div class="cards-list" id="lista-voz" style="margin-top: 14px;"></div>
-    </div>
-
-    <!-- ABA CONTRATOS -->
-    <div id="sec-contratos" class="section">
-      <h3 style="margin-bottom: 14px;">Contratos Ativos (Em Processo)</h3>
-      <div class="cards-list" id="lista-contratos"></div>
-    </div>
-
-    <!-- ABA FINANCEIRO -->
-    <div id="sec-financeiro" class="section">
-      <h3 style="margin-bottom: 14px;">Resumo Financeiro</h3>
-      <div class="cards-list" id="lista-financeiro"></div>
-    </div>
-
-    <!-- ABA PENDENTES -->
-    <div id="sec-pendentes" class="section">
-      <h3 style="margin-bottom: 14px; color: var(--warning);">Clientes com Pendências</h3>
-      <div class="cards-list" id="lista-pendentes"></div>
-    </div>
-
-    <!-- ABA POSSÍVEIS -->
-    <div id="sec-possiveis" class="section">
-      <h3 style="margin-bottom: 14px;">Possíveis Clientes (Leads)</h3>
-      <div class="cards-list" id="lista-possiveis"></div>
-    </div>
-
-    <!-- ABA ENCERRADOS -->
-    <div id="sec-encerrados" class="section">
-      <h3 style="margin-bottom: 14px; color: var(--success);">Processos Encerrados</h3>
-      <div class="cards-list" id="lista-encerrados"></div>
-    </div>
-
-  </div>
-
-  <!-- MODAL DE CADASTRO -->
-  <div class="modal" id="modalForm">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3>Cadastrar / Editar Caso</h3>
-        <button onclick="closeModal()" style="background:none; border:none; color:var(--text-sub); font-size:1.5rem; cursor:pointer;">✕</button>
-      </div>
-
-      <form id="processForm" onsubmit="saveProcess(event)">
-        <input type="hidden" id="processId">
-
-        <div class="form-group">
-          <label>Nome do Cliente</label>
-          <input type="text" id="nomeCliente" required placeholder="Ex: Maria das Dores">
+        <!-- BOTAO GRANDE DE MICROFONE -->
+        <div class="relative inline-block py-2">
+          <button type="button" id="btn-voice-tab-mic" onclick="toggleTabVoiceRecognition()" class="w-20 h-20 bg-gradient-to-tr from-cyan-500 to-cyan-400 hover:from-cyan-400 hover:to-cyan-300 text-slate-950 rounded-full font-bold shadow-2xl shadow-cyan-500/40 flex items-center justify-center mx-auto active:scale-95 transition-all">
+            <i data-lucide="mic" class="w-8 h-8 stroke-[2.5]"></i>
+          </button>
         </div>
 
-        <div class="form-group">
-          <label>Objeto / Detalhes (Ex: BPC/LOAS, Gestante, Aposentadoria)</label>
-          <input type="text" id="objetoProcesso" required placeholder="Ex: BPC LOAS Autismo">
+        <!-- TRANSPLANTE DO TEXTO TRANSCITO EM TEMPO REAL -->
+        <div class="bg-slate-950/80 p-3.5 rounded-2xl border border-slate-800/80 max-w-lg mx-auto">
+          <span class="text-[10px] text-slate-500 font-bold uppercase block mb-1">Transcrição em Tempo Real:</span>
+          <p id="voice-tab-transcript" class="text-sm font-semibold text-cyan-300 min-h-[1.5rem] italic">
+            "Aguardando o seu comando de voz..."
+          </p>
+        </div>
+      </div>
+
+      <!-- CAMPO DE BUSCA SINCRONIZADO COM ÁUDIO -->
+      <div class="glass-card p-3.5 rounded-2xl space-y-2">
+        <label class="block text-xs font-bold text-slate-400">Texto Filtrado pela Voz:</label>
+        <div class="relative">
+          <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5"></i>
+          <input type="text" id="voice-search-input" oninput="onVoiceInputManualChange()" placeholder="O texto que você ditar aparecerá aqui..." class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-10 py-2.5 text-xs text-white focus:outline-none focus:border-cyan-500" />
+          <button onclick="clearVoiceSearch()" class="absolute right-3 top-2.5 text-slate-500 hover:text-slate-300 p-1">
+            <i data-lucide="x" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- LISTA DE RESULTADOS ENCONTRADOS PELO ÁUDIO -->
+      <div class="space-y-3">
+        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Processos Encontrados pelo Áudio</h3>
+        <div id="voice-results-list" class="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+          <!-- Renderizado via JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: TODOS OS PROCESSO -->
+    <div id="tab-contratos" class="tab-content hidden space-y-4">
+      <div class="glass-card p-4 rounded-2xl space-y-3">
+        <div class="relative">
+          <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3.5 top-3"></i>
+          <input type="text" id="search-input" oninput="filterCases()" placeholder="Buscar cliente, BPC/LOAS, Gestante, Aposentadoria..." class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-500" />
         </div>
 
-        <div class="form-group">
-          <label>Área do Direito</label>
-          <select id="tipoCaso">
+        <div class="grid grid-cols-2 gap-2.5 text-xs">
+          <select id="filter-year" onchange="filterCases()" class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-300 focus:outline-none focus:border-cyan-500">
+            <option value="ALL">Todos os Anos</option>
+            <option value="2026">2026</option>
+            <option value="2025">2025</option>
+            <option value="2024">2024</option>
+          </select>
+
+          <select id="filter-area" onchange="filterCases()" class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-300 focus:outline-none focus:border-cyan-500">
+            <option value="ALL">Todas as Áreas</option>
             <option value="Previdenciário">Previdenciário</option>
             <option value="Trabalhista">Trabalhista</option>
             <option value="Cível">Cível</option>
-            <option value="Família">Família</option>
-            <option value="Consumidor">Consumidor</option>
-            <option value="Outro">Outro</option>
+            <option value="Família e Sucessões">Família</option>
+            <option value="Outros">Outros</option>
           </select>
         </div>
+      </div>
 
-        <div class="form-group">
-          <label>Status do Caso</label>
-          <select id="statusCaso" onchange="toggleFormFields()">
-            <option value="Ativo">Contrato Fechado (Em Processo)</option>
-            <option value="Pendente">Pendência / Verificar</option>
-            <option value="Possivel">Possível Cliente (Prospecção)</option>
-            <option value="Encerrado">Processo Finalizado</option>
-          </select>
+      <div class="flex items-center justify-between px-1">
+        <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider">Lista de Processos Ativos</h3>
+        <span id="badge-total-filtered" class="text-[10px] bg-slate-800 border border-slate-700 px-2.5 py-0.5 rounded-full text-cyan-400 font-black">0</span>
+      </div>
+
+      <div id="contracts-list" class="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+        <!-- Renderizado via JS -->
+      </div>
+    </div>
+
+    <!-- TAB 4: POSSÍVEIS CLIENTES (LEADS) -->
+    <div id="tab-possiveis" class="tab-content hidden space-y-4">
+      <div class="flex items-center justify-between px-1">
+        <div>
+          <h3 class="text-sm font-black text-white">Possíveis Clientes (Leads)</h3>
+          <p class="text-[10px] text-slate-400">Consultas e propostas aguardando confirmação.</p>
         </div>
+        <span id="badge-prospects-count" class="text-xs bg-sky-500/20 text-sky-400 border border-sky-500/30 px-3 py-1 rounded-full font-black">0</span>
+      </div>
+      <div id="prospects-list" class="grid grid-cols-1 md:grid-cols-2 gap-3.5"></div>
+    </div>
 
-        <div class="toggle-row">
-          <span>O processo está <strong>PRONTO</strong>?</span>
-          <input type="checkbox" id="processoPronto" style="width: auto;">
+    <!-- TAB 5: PENDÊNCIAS -->
+    <div id="tab-pendentes" class="tab-content hidden space-y-4">
+      <div class="flex items-center justify-between px-1">
+        <div>
+          <h3 class="text-sm font-black text-white">Casos com Pendências</h3>
+          <p class="text-[10px] text-slate-400">Verifique certidões, laudos, prazos e faltas de documentos.</p>
         </div>
+        <span id="badge-pending-count" class="text-xs bg-amber-500/20 text-amber-400 border border-amber-500/30 px-3 py-1 rounded-full font-black">0</span>
+      </div>
+      <div id="pending-list" class="grid grid-cols-1 md:grid-cols-2 gap-3.5"></div>
+    </div>
 
-        <div id="financialFields">
-          <div class="form-group">
-            <label>Valor dos Honorários (R$ ou %)</label>
-            <input type="number" id="honorariosVal" step="0.01" placeholder="Ex: 3000 ou 30">
+    <!-- TAB 6: ENCERRADOS -->
+    <div id="tab-encerrados" class="tab-content hidden space-y-4">
+      <div class="flex items-center justify-between px-1">
+        <div>
+          <h3 class="text-sm font-black text-white">Processos Finalizados</h3>
+          <p class="text-[10px] text-slate-400">Histórico de casos concluídos com êxito.</p>
+        </div>
+        <span id="badge-closed-count" class="text-xs bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-3 py-1 rounded-full font-black">0</span>
+      </div>
+      <div id="closed-list" class="grid grid-cols-1 md:grid-cols-2 gap-3.5"></div>
+    </div>
+
+  </main>
+
+  <!-- NAVEGAÇÃO INFERIOR PARA CELULAR -->
+  <nav class="glass-nav md:hidden fixed bottom-0 left-0 right-0 z-40 px-2 py-2">
+    <div class="flex justify-around items-center">
+      <button onclick="switchTab('inicio')" id="nav-inicio" class="nav-btn flex flex-col items-center py-1 px-2 text-cyan-400 transition-colors">
+        <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+        <span class="text-[9px] mt-1 font-bold">Início</span>
+      </button>
+
+      <button onclick="switchTab('voz')" id="nav-voz" class="nav-btn flex flex-col items-center py-1 px-2 text-slate-400 hover:text-white transition-colors">
+        <i data-lucide="mic" class="w-5 h-5"></i>
+        <span class="text-[9px] mt-1 font-bold">Voz</span>
+      </button>
+
+      <button onclick="switchTab('contratos')" id="nav-contratos" class="nav-btn flex flex-col items-center py-1 px-2 text-slate-400 hover:text-white transition-colors">
+        <i data-lucide="folder-open" class="w-5 h-5"></i>
+        <span class="text-[9px] mt-1 font-bold">Processos</span>
+      </button>
+
+      <button onclick="switchTab('possiveis')" id="nav-possiveis" class="nav-btn flex flex-col items-center py-1 px-2 text-slate-400 hover:text-white transition-colors">
+        <i data-lucide="user-plus" class="w-5 h-5"></i>
+        <span class="text-[9px] mt-1 font-bold">Possíveis</span>
+      </button>
+
+      <button onclick="switchTab('pendentes')" id="nav-pendentes" class="nav-btn flex flex-col items-center py-1 px-2 text-slate-400 hover:text-white transition-colors">
+        <i data-lucide="alert-circle" class="w-5 h-5"></i>
+        <span class="text-[9px] mt-1 font-bold">Pendentes</span>
+      </button>
+
+      <button onclick="switchTab('encerrados')" id="nav-encerrados" class="nav-btn flex flex-col items-center py-1 px-2 text-slate-400 hover:text-white transition-colors">
+        <i data-lucide="check-circle" class="w-5 h-5"></i>
+        <span class="text-[9px] mt-1 font-bold">Encerrados</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- MODAL CADASTRO / EDIÇÃO -->
+  <div id="modal-case" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="bg-slate-900 border border-slate-800 w-full sm:max-w-lg rounded-t-3xl sm:rounded-2xl max-h-[92vh] overflow-y-auto no-scrollbar slide-up p-5 space-y-4 shadow-2xl">
+      
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+        <div class="flex items-center space-x-2">
+          <div class="p-2 bg-cyan-500/20 text-cyan-400 rounded-xl">
+            <i data-lucide="file-text" class="w-4 h-4"></i>
           </div>
+          <h3 id="modal-title" class="text-sm font-black text-white">Novo Caso Advocatício</h3>
+        </div>
+        <button onclick="closeModal()" class="text-slate-400 hover:text-white p-1">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
 
-          <div class="form-group">
-            <label>Tipo de Honorário</label>
-            <select id="tipoHonorario">
-              <option value="Fixo">Valor Fixo (R$)</option>
-              <option value="Porcentagem">Porcentagem (%)</option>
-              <option value="Parcelado">Recebendo Parcelado</option>
+      <!-- PAINEL DA IA LOCAL -->
+      <div id="ai-insight-box" class="hidden bg-gradient-to-r from-neon-950/40 to-slate-900 border border-neon-500/30 p-3 rounded-2xl space-y-1">
+        <div class="flex items-center space-x-1.5 text-neon-400 font-bold text-xs">
+          <i data-lucide="sparkles" class="w-4 h-4"></i>
+          <span>IA Local - Análise de Histórico</span>
+        </div>
+        <p id="ai-insight-text" class="text-[11px] text-slate-300 leading-relaxed"></p>
+      </div>
+
+      <form id="case-form" onsubmit="saveCase(event)" class="space-y-3.5">
+        <input type="hidden" id="field-id" />
+
+        <!-- INPUT CLIENTE COM DITADO DEDICADO -->
+        <div>
+          <label class="block text-xs font-bold text-slate-400 mb-1">Nome do Cliente *</label>
+          <div class="relative flex items-center">
+            <input type="text" id="field-client-name" required placeholder="Ex: Maria das Dores Silva" class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-3 pr-10 py-2.5 text-xs text-white focus:outline-none focus:border-cyan-500" />
+            <button type="button" title="Ditar nome do cliente" onclick="listenDirectToInput('field-client-name')" class="absolute right-2 p-1.5 bg-slate-800 hover:bg-cyan-500 hover:text-slate-950 text-cyan-400 rounded-lg transition-colors">
+              <i data-lucide="mic" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- INPUT OBJETO COM DITADO DEDICADO -->
+        <div>
+          <label class="block text-xs font-bold text-slate-400 mb-1">Objeto do Processo (Ex: BPC/LOAS, Gestante, Aposentadoria) *</label>
+          <div class="relative flex items-center">
+            <input type="text" id="field-process-object" required oninput="runOfflineAIAnalysis()" placeholder="Ex: BPC/LOAS Autismo ou Salário-Maternidade" class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-3 pr-10 py-2.5 text-xs text-white focus:outline-none focus:border-cyan-500" />
+            <button type="button" title="Ditar objeto do processo" onclick="listenDirectToInput('field-process-object')" class="absolute right-2 p-1.5 bg-slate-800 hover:bg-cyan-500 hover:text-slate-950 text-cyan-400 rounded-lg transition-colors">
+              <i data-lucide="mic" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2.5">
+          <div>
+            <label class="block text-xs font-bold text-slate-400 mb-1">Área do Direito</label>
+            <select id="field-case-area" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-cyan-500">
+              <option value="Previdenciário">Previdenciário</option>
+              <option value="Trabalhista">Trabalhista</option>
+              <option value="Cível">Cível</option>
+              <option value="Família e Sucessões">Família</option>
+              <option value="Outros">Outros</option>
             </select>
           </div>
 
-          <div class="form-group">
-            <label>Entrada Recebida em Dinheiro (R$)</label>
-            <input type="number" id="entradaDinheiro" step="0.01" value="0">
+          <div>
+            <label class="block text-xs font-bold text-slate-400 mb-1">Status do Caso *</label>
+            <select id="field-case-status" onchange="toggleFormFinancialFields()" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-cyan-500">
+              <option value="Ativo">Contrato Fechado (Ativo)</option>
+              <option value="Possivel">Possível Cliente (Lead)</option>
+              <option value="Pendente">Pendência / Verificar</option>
+              <option value="Encerrado">Processo Finalizado</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- SELETOR SE O PROCESSO ESTÁ PRONTO -->
+        <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 flex items-center justify-between">
+          <div>
+            <span class="text-xs font-bold text-white block">Processo Está Pronto?</span>
+            <span class="text-[10px] text-slate-400">Marque se os documentos/petição estão prontos.</span>
+          </div>
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" id="field-process-ready" class="sr-only peer" />
+            <div class="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+          </label>
+        </div>
+
+        <!-- BLOCO FINANCEIRO (OCULTADO AUTOMATICAMENTE SE FOR POSSÍVEL CLIENTE) -->
+        <div id="financial-form-block" class="space-y-3 pt-1 border-t border-slate-800/80">
+          <div class="grid grid-cols-3 gap-2">
+            <div>
+              <label class="block text-xs font-bold text-slate-400 mb-1">Tipo Honorário</label>
+              <select id="field-fee-type" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-2 py-2.5 text-xs text-white focus:outline-none focus:border-cyan-500">
+                <option value="Fixo">Valor Fixo</option>
+                <option value="Porcentagem">Porcentagem (%)</option>
+                <option value="Parcelado">Parcelado</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-400 mb-1">Valor / %</label>
+              <input type="number" step="0.01" id="field-fee-value" placeholder="Ex: 3000" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-cyan-500" />
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-400 mb-1">Entrada (R$)</label>
+              <input type="number" step="0.01" id="field-advance-amount" placeholder="0.00" value="0" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-cyan-500" />
+            </div>
           </div>
 
-          <div class="form-group">
-            <label>Status Financeiro</label>
-            <select id="statusFinanceiro">
-              <option value="Em Processo">Em Processo</option>
+          <div>
+            <label class="block text-xs font-bold text-slate-400 mb-1">Situação Financeira</label>
+            <select id="field-financial-status" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-cyan-500">
+              <option value="Em Processo">Em Processo (Andamento)</option>
               <option value="Causa Ganha">Causa Ganha</option>
-              <option value="Acordo">Entrou em Acordo</option>
-              <option value="Recebendo">Recebendo Parcelado</option>
-              <option value="Recebido Total">Já Recebeu Total</option>
+              <option value="Entrou em Acordo">Entrou em Acordo</option>
+              <option value="Recebendo Parcelado">Recebendo Parcelado</option>
+              <option value="Integralmente Pago">Integralmente Pago</option>
             </select>
           </div>
 
-          <div class="toggle-row">
-            <span>Repassar 50% de Comissão ao Júnior?</span>
-            <input type="checkbox" id="comissaoJunior" style="width: auto;">
+          <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 flex items-center justify-between">
+            <div>
+              <span class="text-xs font-bold text-neon-400 block">Repassar 50% para Advogado Júnior?</span>
+              <span class="text-[10px] text-slate-400">Calcula metade dos honorários para comissão.</span>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" id="field-junior-commission" class="sr-only peer" />
+              <div class="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-neon-600"></div>
+            </label>
           </div>
         </div>
 
-        <button type="submit" class="btn-submit">Salvar na Planilha e Celular</button>
+        <div>
+          <label class="block text-xs font-bold text-slate-400 mb-1">Notas / Detalhes das Pendências</label>
+          <textarea id="field-notes" rows="2" placeholder="Ex: Faltam comprovantes de residência..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-500"></textarea>
+        </div>
+
+        <div class="pt-2 flex space-x-2">
+          <button type="button" onclick="closeModal()" class="w-1/3 bg-slate-800 hover:bg-slate-700 py-3 rounded-xl text-xs font-bold text-slate-300 transition-colors">
+            Cancelar
+          </button>
+          <button type="submit" class="w-2/3 bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-400 hover:to-cyan-500 text-slate-950 py-3 rounded-xl text-xs font-black shadow-lg shadow-cyan-500/20 active:scale-95 transition-transform">
+            Salvar e Sincronizar
+          </button>
+        </div>
       </form>
     </div>
   </div>
 
+  <!-- JAVASCRIPT LOGIC -->
   <script>
+    // URL PADRONIZADA DO GOOGLE APPS SCRIPT
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyQuWABpuw1jhd2kvZR25ikOvzkXqRVPzZew_ob-KBzZ7_v7qYEhezQsvA_an95p_wL/exec";
 
-    let processos = JSON.parse(localStorage.getItem('processos_db')) || [];
+    let cases = JSON.parse(localStorage.getItem('jusflow_cases_db') || '[]');
+    let tabSpeechRecognition = null;
+    let inputSpeechRecognition = null;
 
-    function normalizeText(text) {
-      if (!text) return '';
-      return text.toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
-    }
+    document.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+      renderAll();
+      fetchCasesFromSheet(); // LEITURA INICIAL DA PLANILHA
+    });
 
-    function updateSyncStatus(isSyncing, text) {
-      const dot = document.getElementById('syncDot');
-      const label = document.getElementById('syncText');
-      if (isSyncing) {
-        dot.classList.add('syncing');
-        label.innerText = text || "Sincronizando...";
-      } else {
-        dot.classList.remove('syncing');
-        label.innerText = text || "Sincronizado";
-      }
-    }
+    // 1. LEITURA EM TEMPO REAL VIA JSONP (SEM ERROS DE CORS)
+    function fetchCasesFromSheet() {
+      const statusText = document.getElementById('sync-status-text');
+      statusText.innerHTML = `Lendo dados da Planilha...`;
 
-    function fetchFromGoogleSheets() {
-      if (!SCRIPT_URL) return;
-      updateSyncStatus(true, "Lendo Planilha...");
+      const script = document.createElement('script');
+      const callbackName = 'onSheetDataLoaded_' + Date.now();
 
-      const callbackName = 'jsonp_callback_' + Math.round(Math.random() * 100000);
-      window[callbackName] = function(data) {
+      window[callbackName] = function(response) {
         delete window[callbackName];
         document.body.removeChild(script);
-        if (Array.isArray(data)) {
-          processos = data;
-          localStorage.setItem('processos_db', JSON.stringify(processos));
-          render();
-          updateSyncStatus(false, "Sincronizado");
+
+        if (Array.isArray(response) && response.length > 0) {
+          cases = response;
+          localStorage.setItem('jusflow_cases_db', JSON.stringify(cases));
+          renderAll();
+          statusText.innerHTML = `Sincronizado com Planilha`;
+        } else {
+          statusText.innerHTML = `Conectado à Planilha`;
         }
       };
 
-      const script = document.createElement('script');
-      script.src = SCRIPT_URL + '?callback=' + callbackName;
+      script.src = `${SCRIPT_URL}?callback=${callbackName}`;
+      script.onerror = function() {
+        statusText.innerHTML = `Modo Offline (Salvo Local)`;
+      };
       document.body.appendChild(script);
     }
 
-    function syncToGoogleSheets(data) {
-      if (!SCRIPT_URL) return;
-      updateSyncStatus(true, "Salvando...");
+    // 2. ESCRITA EM TEMPO REAL NA PLANILHA
+    function syncWithGoogleSheets(data) {
+      const statusText = document.getElementById('sync-status-text');
+      statusText.innerHTML = `Salvando na Planilha...`;
 
       fetch(SCRIPT_URL, {
         method: 'POST',
-        mode: 'no-cors',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify(data)
       })
+      .then(res => res.json())
       .then(() => {
-        setTimeout(fetchFromGoogleSheets, 1000);
+        statusText.innerHTML = `Salvo na Planilha!`;
+        setTimeout(() => { statusText.innerHTML = `Sincronizado com Planilha`; }, 3000);
       })
       .catch(err => {
-        console.error("Erro ao salvar:", err);
-        updateSyncStatus(false, "Erro ao Salvar");
+        console.warn("Sincronizado localmente.", err);
+        statusText.innerHTML = `Salvo Localmente`;
       });
     }
 
-    function switchTab(tabId, btn) {
-      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-      document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
-      document.getElementById(`sec-${tabId}`).classList.add('active');
-      btn.classList.add('active');
+    // 3. RECONHECIMENTO DE VOZ DA TAB DE ÁUDIO (CORRIGIDO)
+    function toggleTabVoiceRecognition() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        alert("Seu navegador não suporta a API de áudio. Tente usar o Google Chrome ou Safari no iPhone.");
+        return;
+      }
+
+      const micBtn = document.getElementById('btn-voice-tab-mic');
+      const transcriptEl = document.getElementById('voice-tab-transcript');
+      const inputEl = document.getElementById('voice-search-input');
+
+      if (tabSpeechRecognition) {
+        tabSpeechRecognition.stop();
+        tabSpeechRecognition = null;
+        micBtn.classList.remove('mic-active-ring', 'bg-rose-500');
+        micBtn.classList.add('bg-gradient-to-tr', 'from-cyan-500', 'to-cyan-400');
+        return;
+      }
+
+      tabSpeechRecognition = new SpeechRecognition();
+      tabSpeechRecognition.lang = 'pt-BR';
+      tabSpeechRecognition.continuous = false;
+      tabSpeechRecognition.interimResults = true;
+
+      micBtn.classList.add('mic-active-ring', 'bg-rose-500');
+
+      tabSpeechRecognition.onstart = () => {
+        transcriptEl.innerText = "Escutando... Dite o nome do cliente ou processo.";
+      };
+
+      tabSpeechRecognition.onresult = (event) => {
+        let transcriptText = '';
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          transcriptText += event.results[i][0].transcript;
+        }
+
+        // PREENCHE O TEXTO EM TEMPO REAL NO INPUT
+        transcriptEl.innerText = `"${transcriptText}"`;
+        inputEl.value = transcriptText;
+        filterVoiceResults(transcriptText);
+      };
+
+      tabSpeechRecognition.onerror = () => stopTabVoice();
+      tabSpeechRecognition.onend = () => stopTabVoice();
+
+      tabSpeechRecognition.start();
     }
 
-    function openModal() {
-      document.getElementById('modalForm').classList.add('active');
-      toggleFormFields();
+    function stopTabVoice() {
+      const micBtn = document.getElementById('btn-voice-tab-mic');
+      if (micBtn) {
+        micBtn.classList.remove('mic-active-ring', 'bg-rose-500');
+        micBtn.classList.add('bg-gradient-to-tr', 'from-cyan-500', 'to-cyan-400');
+      }
+      tabSpeechRecognition = null;
+    }
+
+    function onVoiceInputManualChange() {
+      const val = document.getElementById('voice-search-input').value;
+      filterVoiceResults(val);
+    }
+
+    function clearVoiceSearch() {
+      document.getElementById('voice-search-input').value = '';
+      document.getElementById('voice-tab-transcript').innerText = '"Aguardando o seu comando de voz..."';
+      filterVoiceResults('');
+    }
+
+    function filterVoiceResults(queryText) {
+      const cleanQuery = queryText.toLowerCase().trim();
+      const resultsContainer = document.getElementById('voice-results-list');
+
+      if (!cleanQuery) {
+        resultsContainer.innerHTML = `<p class="text-xs text-slate-500 text-center py-6 col-span-2">Dite algo no microfone para filtrar instantaneamente.</p>`;
+        return;
+      }
+
+      const matches = cases.filter(c => 
+        c.clientName.toLowerCase().includes(cleanQuery) ||
+        c.processObject.toLowerCase().includes(cleanQuery) ||
+        c.caseArea.toLowerCase().includes(cleanQuery) ||
+        c.caseStatus.toLowerCase().includes(cleanQuery)
+      );
+
+      resultsContainer.innerHTML = matches.length
+        ? matches.map(buildCaseCard).join('')
+        : `<p class="text-xs text-slate-500 text-center py-6 col-span-2">Nenhum cliente encontrado com "${cleanQuery}".</p>`;
+
+      lucide.createIcons();
+    }
+
+    // 4. DITADO DIRETO NOS INPUTS DO FORMULÁRIO (ÍCONES DE MIC NOS INPUTS)
+    function listenDirectToInput(inputId) {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        alert("Navegador não suporta reconhecimento de voz.");
+        return;
+      }
+
+      const inputEl = document.getElementById(inputId);
+      
+      if (inputSpeechRecognition) {
+        inputSpeechRecognition.stop();
+        inputSpeechRecognition = null;
+        return;
+      }
+
+      inputSpeechRecognition = new SpeechRecognition();
+      inputSpeechRecognition.lang = 'pt-BR';
+      inputSpeechRecognition.continuous = false;
+      inputSpeechRecognition.interimResults = true;
+
+      inputSpeechRecognition.onstart = () => {
+        inputEl.placeholder = "Ouvindo sua voz...";
+      };
+
+      inputSpeechRecognition.onresult = (event) => {
+        let transcript = '';
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          transcript += event.results[i][0].transcript;
+        }
+        inputEl.value = transcript;
+        if (inputId === 'field-process-object') runOfflineAIAnalysis();
+      };
+
+      inputSpeechRecognition.onend = () => {
+        inputSpeechRecognition = null;
+      };
+
+      inputSpeechRecognition.start();
+    }
+
+    // 5. NAVEGAÇÃO ENTRE TABS
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      const activeTab = document.getElementById(`tab-${tabId}`);
+      if (activeTab) activeTab.classList.remove('hidden');
+
+      // Botoes Mobile
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.classList.remove('text-cyan-400');
+        btn.classList.add('text-slate-400');
+      });
+      const currentNav = document.getElementById(`nav-${tabId}`);
+      if (currentNav) {
+        currentNav.classList.remove('text-slate-400');
+        currentNav.classList.add('text-cyan-400');
+      }
+
+      // Botoes Desktop
+      document.querySelectorAll('.dnav-btn').forEach(btn => {
+        btn.classList.remove('text-cyan-400', 'bg-cyan-500/10');
+        btn.classList.add('text-slate-400');
+      });
+      const currentDNav = document.getElementById(`dtab-${tabId}`);
+      if (currentDNav) {
+        currentDNav.classList.remove('text-slate-400');
+        currentDNav.classList.add('text-cyan-400', 'bg-cyan-500/10');
+      }
+    }
+
+    // 6. OCULTAR CAMPOS FINANCEIROS PARA POSSÍVEL CLIENTE
+    function toggleFormFinancialFields() {
+      const status = document.getElementById('field-case-status').value;
+      const finBlock = document.getElementById('financial-form-block');
+      if (status === 'Possivel') {
+        finBlock.classList.add('hidden');
+      } else {
+        finBlock.classList.remove('hidden');
+      }
+    }
+
+    // 7. CHAVE RÁPIDA DE TOGGLE "PRONTO" NO CARD
+    function toggleCaseReadyState(caseId) {
+      const itemIdx = cases.findIndex(c => c.id === caseId);
+      if (itemIdx >= 0) {
+        cases[itemIdx].processReady = !cases[itemIdx].processReady;
+        localStorage.setItem('jusflow_cases_db', JSON.stringify(cases));
+        syncWithGoogleSheets(cases[itemIdx]);
+        renderAll();
+      }
+    }
+
+    function openModal(caseId = null) {
+      const modal = document.getElementById('modal-case');
+      const form = document.getElementById('case-form');
+      form.reset();
+
+      if (caseId) {
+        const item = cases.find(c => c.id === caseId);
+        if (item) {
+          document.getElementById('modal-title').innerText = 'Editar Registro do Caso';
+          document.getElementById('field-id').value = item.id;
+          document.getElementById('field-client-name').value = item.clientName;
+          document.getElementById('field-process-object').value = item.processObject;
+          document.getElementById('field-case-area').value = item.caseArea;
+          document.getElementById('field-case-status').value = item.caseStatus;
+          document.getElementById('field-process-ready').checked = !!item.processReady;
+          document.getElementById('field-fee-type').value = item.feeType || 'Fixo';
+          document.getElementById('field-fee-value').value = item.feeValue || 0;
+          document.getElementById('field-advance-amount').value = item.advanceAmount || 0;
+          document.getElementById('field-financial-status').value = item.financialStatus || 'Em Processo';
+          document.getElementById('field-junior-commission').checked = !!item.juniorCommission;
+          document.getElementById('field-notes').value = item.notes || '';
+          toggleFormFinancialFields();
+          runOfflineAIAnalysis();
+        }
+      } else {
+        document.getElementById('modal-title').innerText = 'Novo Caso Advocatício';
+        document.getElementById('field-id').value = '';
+        document.getElementById('ai-insight-box').classList.add('hidden');
+        toggleFormFinancialFields();
+      }
+
+      modal.classList.remove('hidden');
     }
 
     function closeModal() {
-      document.getElementById('modalForm').classList.remove('active');
-      document.getElementById('processForm').reset();
-      document.getElementById('processId').value = '';
+      document.getElementById('modal-case').classList.add('hidden');
     }
 
-    function toggleFormFields() {
-      const status = document.getElementById('statusCaso').value;
-      const finGroup = document.getElementById('financialFields');
-      finGroup.style.display = status === 'Possivel' ? 'none' : 'block';
+    // 8. MOTOR DE IA LOCAL (SIMILARIDADE)
+    function tokenize(text) {
+      return text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").split(/\W+/).filter(w => w.length > 2);
     }
 
-    function saveProcess(e) {
+    function calculateJaccardSimilarity(str1, str2) {
+      const set1 = new Set(tokenize(str1));
+      const set2 = new Set(tokenize(str2));
+      const intersection = new Set([...set1].filter(x => set2.has(x)));
+      const union = new Set([...set1, ...set2]);
+      return union.size === 0 ? 0 : intersection.size / union.size;
+    }
+
+    function runOfflineAIAnalysis() {
+      const inputObject = document.getElementById('field-process-object').value;
+      const aiBox = document.getElementById('ai-insight-box');
+      const aiText = document.getElementById('ai-insight-text');
+
+      if (!inputObject || inputObject.trim().length < 3 || cases.length === 0) {
+        aiBox.classList.add('hidden');
+        return;
+      }
+
+      aiBox.classList.remove('hidden');
+
+      const matches = cases.map(c => ({
+        item: c,
+        score: calculateJaccardSimilarity(inputObject, c.processObject + ' ' + c.caseArea)
+      })).filter(m => m.score > 0.12).sort((a, b) => b.score - a.score);
+
+      if (matches.length === 0) {
+        aiText.innerHTML = `⚠️ <em>Primeiro registro para este tipo de objeto no banco de dados.</em>`;
+        return;
+      }
+
+      const wins = matches.filter(m => m.item.financialStatus === 'Causa Ganha' || m.item.financialStatus === 'Entrou em Acordo' || m.item.caseStatus === 'Encerrado').length;
+      const winRate = Math.round((wins / matches.length) * 100);
+      const avgFee = Math.round(matches.reduce((acc, m) => acc + (parseFloat(m.item.feeValue) || 0), 0) / matches.length);
+
+      aiText.innerHTML = `
+        Encontrados <strong>${matches.length} caso(s) semelhante(s)</strong> no histórico:<br>
+        • Êxito Histórico: <strong class="text-emerald-400">${winRate}%</strong> de vitórias/acordos.<br>
+        • Média de Honorários: <strong class="text-cyan-400">R$ ${avgFee.toLocaleString('pt-BR')}</strong>.<br>
+        • Recomendação: ${winRate >= 50 ? '<strong>Alta viabilidade.</strong> Sugerido fechar contrato.' : '<strong>Requer cuidado com documentos.</strong>'}
+      `;
+    }
+
+    // 9. SALVAR CASO
+    function saveCase(e) {
       e.preventDefault();
-      
-      const idExistente = document.getElementById('processId').value;
-      const novoProcesso = {
-        id: idExistente ? parseInt(idExistente) : Date.now(),
-        cliente: document.getElementById('nomeCliente').value,
-        objeto: document.getElementById('objetoProcesso').value,
-        tipoCaso: document.getElementById('tipoCaso').value,
-        statusCaso: document.getElementById('statusCaso').value,
-        processoPronto: document.getElementById('processoPronto').checked,
-        honorariosVal: parseFloat(document.getElementById('honorariosVal').value) || 0,
-        tipoHonorario: document.getElementById('tipoHonorario').value,
-        entradaDinheiro: parseFloat(document.getElementById('entradaDinheiro').value) || 0,
-        statusFinanceiro: document.getElementById('statusFinanceiro').value,
-        comissaoJunior: document.getElementById('comissaoJunior').checked,
-        data: new Date().toLocaleDateString('pt-BR')
+
+      const id = document.getElementById('field-id').value || 'case_' + Date.now();
+      const today = new Date();
+      const status = document.getElementById('field-case-status').value;
+
+      const caseData = {
+        id: id,
+        clientName: document.getElementById('field-client-name').value.trim(),
+        processObject: document.getElementById('field-process-object').value.trim(),
+        caseArea: document.getElementById('field-case-area').value,
+        caseStatus: status,
+        processReady: document.getElementById('field-process-ready').checked,
+        feeType: status === 'Possivel' ? 'Fixo' : document.getElementById('field-fee-type').value,
+        feeValue: status === 'Possivel' ? 0 : parseFloat(document.getElementById('field-fee-value').value) || 0,
+        advanceAmount: status === 'Possivel' ? 0 : parseFloat(document.getElementById('field-advance-amount').value) || 0,
+        financialStatus: status === 'Possivel' ? 'Em Processo' : document.getElementById('field-financial-status').value,
+        juniorCommission: status === 'Possivel' ? false : document.getElementById('field-junior-commission').checked,
+        notes: document.getElementById('field-notes').value.trim(),
+        year: today.getFullYear().toString(),
+        month: (today.getMonth() + 1).toString().padStart(2, '0'),
+        dateStr: today.toLocaleDateString('pt-BR')
       };
 
-      if (idExistente) {
-        processos = processos.map(p => p.id === parseInt(idExistente) ? novoProcesso : p);
+      const existingIdx = cases.findIndex(c => c.id === id);
+      if (existingIdx >= 0) {
+        cases[existingIdx] = caseData;
       } else {
-        processos.unshift(novoProcesso);
+        cases.unshift(caseData);
       }
 
-      localStorage.setItem('processos_db', JSON.stringify(processos));
-      render();
-      syncToGoogleSheets(novoProcesso);
+      localStorage.setItem('jusflow_cases_db', JSON.stringify(cases));
+      syncWithGoogleSheets(caseData);
+
       closeModal();
+      renderAll();
     }
 
-    // --- PESQUISA DE VOZ CORRIGIDA ---
-    let recognition;
-    function toggleGlobalVoice() {
-      const btn = document.getElementById('btnMicGlobal');
-      const res = document.getElementById('voiceResult');
-
-      if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-        alert("O seu navegador não suporta reconhecimento de voz.");
-        return;
+    function deleteCase(id) {
+      if (confirm('Deseja realmente remover este processo?')) {
+        cases = cases.filter(c => c.id !== id);
+        localStorage.setItem('jusflow_cases_db', JSON.stringify(cases));
+        renderAll();
       }
-
-      if (recognition && recognition.isListening) {
-        recognition.stop();
-        return;
-      }
-
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      recognition = new SpeechRecognition();
-      recognition.lang = 'pt-BR';
-      recognition.continuous = false;
-
-      recognition.onstart = function() {
-        recognition.isListening = true;
-        btn.classList.add('listening');
-        res.innerText = "Ouvindo... Diga o nome ou a categoria.";
-      };
-
-      recognition.onresult = function(event) {
-        let text = event.results[0][0].transcript;
-        
-        // Remove palavras de comando comuns para isolar o termo pesquisado
-        let queryLimpada = text.replace(/^(buscar|pesquisar|procurar|ver|mostrar|filtrar)\s+/i, '');
-
-        res.innerText = `Buscando por: "${queryLimpada}"`;
-        document.getElementById('globalSearch').value = queryLimpada;
-        renderVoiceSearch(queryLimpada);
-      };
-
-      recognition.onend = function() {
-        recognition.isListening = false;
-        btn.classList.remove('listening');
-      };
-
-      recognition.start();
     }
 
-    function renderVoiceSearch(query) {
-      const filtered = filterData(query);
-      document.getElementById('lista-voz').innerHTML = filtered.map(renderCard).join('') || '<p style="color:var(--text-sub)">Nenhum processo encontrado para este termo falado.</p>';
+    // 10. RENDERIZAÇÃO GERAL E CARDS
+    function renderAll() {
+      const currentYear = new Date().getFullYear().toString();
+      const currentMonth = (new Date().getMonth() + 1).toString().padStart(2, '0');
+
+      const totalRevenue = cases.reduce((acc, c) => acc + (c.feeType !== 'Porcentagem' ? (parseFloat(c.feeValue) || 0) : 0), 0);
+      const yearRevenue = cases.filter(c => c.year === currentYear).reduce((acc, c) => acc + (c.feeType !== 'Porcentagem' ? (parseFloat(c.feeValue) || 0) : 0), 0);
+      const monthRevenue = cases.filter(c => c.year === currentYear && c.month === currentMonth).reduce((acc, c) => acc + (c.feeType !== 'Porcentagem' ? (parseFloat(c.feeValue) || 0) : 0), 0);
+      const totalAdvance = cases.reduce((acc, c) => acc + (parseFloat(c.advanceAmount) || 0), 0);
+      const juniorCommissionTotal = cases.filter(c => c.juniorCommission).reduce((acc, c) => acc + (c.feeType !== 'Porcentagem' ? ((parseFloat(c.feeValue) || 0) * 0.5) : 0), 0);
+      const netProfit = totalRevenue - juniorCommissionTotal;
+
+      const countActive = cases.filter(c => c.caseStatus === 'Ativo').length;
+      const countProspects = cases.filter(c => c.caseStatus === 'Possivel').length;
+      const countPending = cases.filter(c => c.caseStatus === 'Pendente').length;
+      const countClosed = cases.filter(c => c.caseStatus === 'Encerrado').length;
+
+      document.getElementById('dash-month-revenue').innerText = `R$ ${monthRevenue.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+      document.getElementById('dash-year-revenue').innerText = `R$ ${yearRevenue.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+      document.getElementById('dash-total-revenue').innerText = `R$ ${totalRevenue.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+      document.getElementById('dash-net-profit').innerText = `R$ ${netProfit.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+      document.getElementById('dash-total-advance').innerText = `R$ ${totalAdvance.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+      document.getElementById('dash-junior-commission').innerText = `R$ ${juniorCommissionTotal.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+
+      document.getElementById('count-active').innerText = countActive;
+      document.getElementById('count-prospects').innerText = countProspects;
+      document.getElementById('count-pending').innerText = countPending;
+      document.getElementById('count-closed').innerText = countClosed;
+
+      document.getElementById('badge-prospects-count').innerText = countProspects;
+      document.getElementById('badge-pending-count').innerText = countPending;
+      document.getElementById('badge-closed-count').innerText = countClosed;
+
+      renderLists();
+      lucide.createIcons();
     }
 
-    function filterData(overrideQuery) {
-      const q = normalizeText(overrideQuery !== undefined ? overrideQuery : document.getElementById('globalSearch').value);
-      const ano = document.getElementById('filterAno').value;
-      const area = document.getElementById('filterArea').value;
+    function buildCaseCard(item) {
+      const statusBadges = {
+        'Ativo': 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20',
+        'Pendente': 'bg-amber-500/10 text-amber-400 border-amber-500/20',
+        'Possivel': 'bg-sky-500/10 text-sky-400 border-sky-500/20',
+        'Encerrado': 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+      };
 
-      return processos.filter(p => {
-        const cliente = normalizeText(p.cliente);
-        const objeto = normalizeText(p.objeto);
-        const tipoCaso = normalizeText(p.tipoCaso);
-        const statusCaso = normalizeText(p.statusCaso);
+      const juniorVal = item.juniorCommission && item.feeType !== 'Porcentagem' ? (item.feeValue * 0.5) : 0;
+      const isLead = item.caseStatus === 'Possivel';
 
-        const matchQ = !q || cliente.includes(q) || objeto.includes(q) || tipoCaso.includes(q) || statusCaso.includes(q);
-        const matchAno = !ano || (p.data && p.data.includes(ano));
-        const matchArea = !area || p.tipoCaso === area;
-        return matchQ && matchAno && matchArea;
-      });
-    }
-
-    function renderCard(p) {
-      const valJunior = p.comissaoJunior && p.tipoHonorario !== 'Porcentagem' ? (p.honorariosVal * 0.5) : 0;
       return `
-        <div class="card-process">
-          <div class="card-top">
+        <div class="glass-card glass-card-interactive rounded-2xl p-4 space-y-3 relative">
+          <div class="flex justify-between items-start">
             <div>
-              <div class="client-name">${p.cliente}</div>
-              <span class="tag-objeto">📌 ${p.objeto}</span>
-              <span class="badge-pronto ${p.processoPronto ? 'pronto-sim' : 'pronto-nao'}">
-                ${p.processoPronto ? '✅ PRONTO' : '⏳ EM ANDAMENTO'}
-              </span>
+              <h4 class="font-black text-white text-sm tracking-tight leading-tight">${item.clientName}</h4>
+              <span class="inline-block text-[11px] font-bold text-neon-400 mt-1">📌 ${item.processObject}</span>
             </div>
-            <span class="badge badge-${p.statusCaso ? p.statusCaso.toLowerCase() : 'ativo'}">${p.statusCaso}</span>
+            <div class="flex flex-col items-end space-y-1">
+              <span class="text-[9px] px-2.5 py-0.5 rounded-full border font-black tracking-wider ${statusBadges[item.caseStatus] || 'bg-slate-800 text-slate-300'}">
+                ${item.caseStatus}
+              </span>
+
+              <!-- BOTAO TOGGLE PRONTO -->
+              <button onclick="toggleCaseReadyState('${item.id}')" title="Clique para alterar status de prontidão" class="text-[9px] font-extrabold px-2 py-0.5 rounded-md border flex items-center space-x-1 ${item.processReady ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-slate-800 text-slate-400 border-slate-700'}">
+                <span>${item.processReady ? 'PRONTO' : 'EM ANDAMENTO'}</span>
+              </button>
+            </div>
           </div>
-          
-          ${p.statusCaso !== 'Possivel' ? `
-            <div class="process-info-grid">
-              <span>Área: <strong class="val-highlight">${p.tipoCaso}</strong></span>
-              <span>Financeiro: <strong class="val-highlight">${p.statusFinanceiro}</strong></span>
-              <span>Honorários: <strong class="val-highlight">${p.tipoHonorario === 'Porcentagem' ? p.honorariosVal + '\%' : 'R$ ' + p.honorariosVal}</strong></span>
-              <span>Entrada: <strong class="val-highlight">R$ ${p.entradaDinheiro || 0}</strong></span>
-              <span>Jr. (50%): <strong class="val-highlight" style="color:${p.comissaoJunior ? '#22c55e' : '#94a3b8'}">${p.comissaoJunior ? 'SIM (R$ ' + valJunior + ')' : 'NÃO'}</strong></span>
-              <span>Data: <strong class="val-highlight">${p.data}</strong></span>
+
+          ${!isLead ? `
+            <div class="grid grid-cols-2 gap-2 text-xs bg-slate-950/80 p-2.5 rounded-xl border border-slate-800/80">
+              <div>
+                <span class="text-slate-500 text-[9px] font-bold block uppercase">Área / Honorários</span>
+                <span class="font-bold text-slate-200">${item.caseArea} (${item.feeType === 'Porcentagem' ? item.feeValue + '%' : 'R$ ' + (parseFloat(item.feeValue)||0).toLocaleString('pt-BR')})</span>
+              </div>
+              <div>
+                <span class="text-slate-500 text-[9px] font-bold block uppercase">Entrada Caixa</span>
+                <span class="font-extrabold text-amber-400">R$ ${(parseFloat(item.advanceAmount) || 0).toLocaleString('pt-BR', {minimumFractionDigits: 2})}</span>
+              </div>
+              <div>
+                <span class="text-slate-500 text-[9px] font-bold block uppercase">Situação Financeira</span>
+                <span class="font-bold text-cyan-400">${item.financialStatus}</span>
+              </div>
+              <div>
+                <span class="text-slate-500 text-[9px] font-bold block uppercase">Comissão Jr (50%)</span>
+                <span class="font-bold ${item.juniorCommission ? 'text-neon-400' : 'text-slate-600'}">
+                  ${item.juniorCommission ? `SIM (R$ ${juniorVal.toLocaleString('pt-BR', {minimumFractionDigits: 2})})` : 'NÃO'}
+                </span>
+              </div>
             </div>
           ` : `
-            <div class="process-info-grid">
-              <span>Área: <strong class="val-highlight">${p.tipoCaso}</strong></span>
-              <span>Data Lead: <strong class="val-highlight">${p.data}</strong></span>
+            <div class="text-xs bg-slate-950/80 p-2.5 rounded-xl border border-slate-800/80">
+              <span class="text-slate-500 text-[9px] font-bold block uppercase">Área da Proposta</span>
+              <span class="font-bold text-slate-200">${item.caseArea}</span>
             </div>
           `}
+
+          ${item.notes ? `
+            <div class="text-[10px] text-amber-300/90 bg-amber-500/10 border border-amber-500/20 p-2 rounded-xl">
+              <strong>Pendência:</strong> ${item.notes}
+            </div>
+          ` : ''}
+
+          <div class="flex justify-between items-center pt-2 border-t border-slate-800/80 text-[10px] text-slate-500 font-medium">
+            <span>Data: ${item.dateStr || ''}</span>
+            <div class="flex space-x-3">
+              <button onclick="openModal('${item.id}')" class="text-cyan-400 hover:text-cyan-300 font-bold flex items-center space-x-1">
+                <i data-lucide="edit-2" class="w-3.5 h-3.5"></i><span>Editar</span>
+              </button>
+              <button onclick="deleteCase('${item.id}')" class="text-rose-400 hover:text-rose-300 font-bold flex items-center space-x-1">
+                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i><span>Excluir</span>
+              </button>
+            </div>
+          </div>
         </div>
       `;
     }
 
-    function render() {
-      const list = filterData();
-      const anoAtual = "2026";
+    function filterCases() {
+      const search = document.getElementById('search-input').value.toLowerCase();
+      const year = document.getElementById('filter-year').value;
+      const area = document.getElementById('filter-area').value;
 
-      const totalEntradas = processos.reduce((acc, p) => acc + (p.entradaDinheiro || 0), 0);
-      const totalJr = processos.reduce((acc, p) => acc + (p.comissaoJunior && p.tipoHonorario !== 'Porcentagem' ? p.honorariosVal * 0.5 : 0), 0);
-      const totalHonorariosBruto = processos.reduce((acc, p) => acc + (p.tipoHonorario !== 'Porcentagem' ? p.honorariosVal : 0), 0);
-      const lucroEstimado = totalHonorariosBruto - totalJr;
+      const filtered = cases.filter(c => {
+        const matchesSearch = c.clientName.toLowerCase().includes(search) || 
+                              c.processObject.toLowerCase().includes(search) ||
+                              c.caseArea.toLowerCase().includes(search);
+        const matchesYear = year === 'ALL' || c.year === year;
+        const matchesArea = area === 'ALL' || c.caseArea === area;
 
-      const fatAno = processos.filter(p => p.data && p.data.includes(anoAtual)).reduce((acc, p) => acc + (p.tipoHonorario !== 'Porcentagem' ? p.honorariosVal : 0), 0);
+        return matchesSearch && matchesYear && matchesArea;
+      });
 
-      document.getElementById('m-fat-mes').innerText = `R$ ${(fatAno / 12).toLocaleString('pt-BR', {maximumFractionDigits:0})}`;
-      document.getElementById('m-fat-ano').innerText = `R$ ${fatAno.toLocaleString('pt-BR')}`;
-      document.getElementById('m-total-entradas').innerText = `R$ ${totalEntradas.toLocaleString('pt-BR')}`;
-      document.getElementById('m-lucro').innerText = `R$ ${lucroEstimado.toLocaleString('pt-BR')}`;
-      document.getElementById('m-jr').innerText = `R$ ${totalJr.toLocaleString('pt-BR')}`;
-      document.getElementById('m-qtd-ativo').innerText = processos.filter(p => p.statusCaso === 'Ativo').length;
-
-      document.getElementById('lista-inicio').innerHTML = list.slice(0, 6).map(renderCard).join('') || '<p style="color:var(--text-sub)">Nenhum caso encontrado.</p>';
-      document.getElementById('lista-contratos').innerHTML = list.filter(p => p.statusCaso === 'Ativo').map(renderCard).join('') || '<p style="color:var(--text-sub)">Nenhum contrato ativo.</p>';
-      document.getElementById('lista-financeiro').innerHTML = list.map(renderCard).join('');
-      document.getElementById('lista-pendentes').innerHTML = list.filter(p => p.statusCaso === 'Pendente').map(renderCard).join('') || '<p style="color:var(--text-sub)">Nenhuma pendência.</p>';
-      document.getElementById('lista-possiveis').innerHTML = list.filter(p => p.statusCaso === 'Possivel').map(renderCard).join('') || '<p style="color:var(--text-sub)">Nenhum lead em prospecção.</p>';
-      document.getElementById('lista-encerrados').innerHTML = list.filter(p => p.statusCaso === 'Encerrado').map(renderCard).join('') || '<p style="color:var(--text-sub)">Nenhum caso encerrado.</p>';
+      document.getElementById('badge-total-filtered').innerText = filtered.length;
+      document.getElementById('contracts-list').innerHTML = filtered.length 
+        ? filtered.map(buildCaseCard).join('') 
+        : '<p class="text-xs text-slate-500 text-center py-6 col-span-2">Nenhum processo encontrado.</p>';
+      
+      lucide.createIcons();
     }
 
-    render();
-    fetchFromGoogleSheets();
+    function renderLists() {
+      document.getElementById('recent-list').innerHTML = cases.length 
+        ? cases.slice(0, 4).map(buildCaseCard).join('') 
+        : '<p class="text-xs text-slate-500 text-center py-4 col-span-2">Nenhum caso cadastrado na planilha ainda.</p>';
+
+      filterCases();
+
+      const prospects = cases.filter(c => c.caseStatus === 'Possivel');
+      document.getElementById('prospects-list').innerHTML = prospects.length ? prospects.map(buildCaseCard).join('') : '<p class="text-xs text-slate-500 text-center py-4 col-span-2">Nenhum cliente em prospecção.</p>';
+
+      const pending = cases.filter(c => c.caseStatus === 'Pendente');
+      document.getElementById('pending-list').innerHTML = pending.length ? pending.map(buildCaseCard).join('') : '<p class="text-xs text-slate-500 text-center py-4 col-span-2">Nenhuma pendência ativa!</p>';
+
+      const closed = cases.filter(c => c.caseStatus === 'Encerrado');
+      document.getElementById('closed-list').innerHTML = closed.length ? closed.map(buildCaseCard).join('') : '<p class="text-xs text-slate-500 text-center py-4 col-span-2">Nenhum processo encerrado.</p>';
+    }
   </script>
 </body>
 </html>
